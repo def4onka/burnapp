@@ -151,6 +151,17 @@
 			panel.add(workdaysPan,BorderLayout.EAST);
 			panel.add(showDiag_bttn,BorderLayout.SOUTH);
 
+			addnew_task.addActionListener(new ActionListener() {
+
+				public void actionPerformed(ActionEvent e) {
+
+					if(!av.isVisible()) {
+						av.setVisible(true);
+					}
+				}
+
+			});
+
 			add(panel);
 
 			WindowListener listener = new WindowAdapter() {
@@ -320,9 +331,7 @@
 					public void actionPerformed(ActionEvent e) {
 						try{
 							Statement statement = conn.createStatement();
-				//ResultSet rs =
-			//	statement.executeQuery("insert into tasks values (" +
-					// "\"" + labor_vol_tf.getText() + "\", " + date_tf.getText() + ");");
+
 
 							statement.executeUpdate("insert into tasks (title, labor_vol,status) values (" +
 								"'" + title_tf.getText() + "', "+ Integer.parseInt(labor_vol_tf.getText()) +", "+ "'Запланировано'" +");");//to_date('" + date_tf.getText() + "', 'mm/dd/yyyy'));");
