@@ -6,6 +6,7 @@ import java.awt.event.*;
 import java.sql.*;
 
 class ConnectionDial extends JFrame{
+  private static final long serialVersionUID = 1L;
 
   private String login;
   private String pass;
@@ -76,14 +77,14 @@ class ConnectionDial extends JFrame{
           System.out.println("Connected to database.");
           try{
           Statement st = conn.createStatement();
-          st.executeUpdate("create table if not exists Tasks("+
+          st.executeUpdate("create table if not exists tasks("+
             "id serial primary key,"+
             "title text not null unique,"+
             "labor_vol integer not null,"+
             "status text not null check(status in ('Выполнено','Запланировано')),"+
             "readyday date check(status = 'Выполнено' or null));");
           System.out.println("Table tasks created or exists");
-          st.executeUpdate("create table if not exists Days("+
+          st.executeUpdate("create table if not exists workdays("+
             "id serial primary key,"+
             "workday date not null unique,"+
             "labor_vol int not null);");

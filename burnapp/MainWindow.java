@@ -12,13 +12,19 @@
 
 		private static final int VERTICAL_GAP = 10;
 		private static final int HORIZONTAL_GAP = 30;
+		private static final int TASKS_WIDTH = 600;
+		private static final int TASKS_HEIGTH = 200;
+		private static final int WORKDAYS_WIDTH = 300;
+		private static final int WORKDAYS_HEIGTH = 200;
 		//private JButton addBttn = new JButton("Добавить задачу");
 		//private JButton remBttn = new JButton("Удалить задачу");
 		//private JButton cnnctBttn = new JButton("Подключиться к БД");
 		protected Connection conn = null;
-		protected Statement st = null;
-		protected static ResultSetMetaData tasks_rsmd = null;
-		protected static ResultSet rs = null;
+		protected static Statement st = null;
+		//protected static ResultSetMetaData tasks_rsmd = null;
+		//protected static ResultSetMetaData workdays_rsmd = null;
+		//protected static ResultSet tasks_rs = null;
+		//protected static ResultSet workdays_rs = null;
 		private AddValues av = new AddValues(this, "New Entry");
 		private RemoveEntry re = new RemoveEntry(this, "Remove Entry");
 
@@ -36,13 +42,6 @@
 				stExc.printStackTrace();
 			}
 
-			try{
-				 rs =  st.executeQuery("select * from tasks");
-				 tasks_rsmd = rs.getMetaData();
-			}catch(SQLException rsExc){
-				System.out.println("resulset not created");
-				rsExc.printStackTrace();
-			}
 
 			setLayout(new FlowLayout(FlowLayout.LEFT, HORIZONTAL_GAP, VERTICAL_GAP));
 
@@ -90,19 +89,42 @@
 			head_lbl.setVisible(true);
 			panel.add(head_lbl,BorderLayout.NORTH);
 
-			JPanel tasksPan = new JPanel();
+			JPanel tasksPan = new JPanel(new BorderLayout());
+			tasksPan.setSize(700,500);
 
-			JTable tasks_tb = new JTable(buildTableModel());
-			tasks_tb.setSize(new Dimension(500, 200));
-			tasks_tb.setPreferredSize(new Dimension(500, 200));
+			JTable tasks_tb = new JTable(buildTasksTableModel("tasks"));
+			tasks_tb.setSize(new Dimension(TASKS_WIDTH, TASKS_HEIGTH));
+			tasks_tb.setPreferredSize(new Dimension(TASKS_WIDTH, TASKS_HEIGTH));
 			JScrollPane tasks_scrtb = new JScrollPane(tasks_tb);
 			tasks_tb.setFillsViewportHeight(true);
 			//tasks_tb.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-			tasks_scrtb.setSize(new Dimension(500, 200));
-			tasks_scrtb.setPreferredSize(new Dimension(500, 200));
-			tasksPan.add(new Label("Задачи"));
-			tasksPan.add(tasks_scrtb);
+			tasks_scrtb.setSize(new Dimension(TASKS_WIDTH, TASKS_HEIGTH));
+			tasks_scrtb.setPreferredSize(new Dimension(TASKS_WIDTH, TASKS_HEIGTH));
+			JLabel task_lbl = new JLabel("Задачи");
+			task_lbl.setFont(new Font("Colibri", Font.PLAIN, 18));
+			tasksPan.add(task_lbl,BorderLayout.NORTH);
+			tasksPan.add(tasks_scrtb,BorderLayout.CENTER);
+
+			JPanel workdaysPan = new JPanel(new BorderLayout());
+			workdaysPan.setSize(300,200);
+
+			JTable workdays_tb = new JTable(buildWorkdaysTableModel("workdays"));
+			workdays_tb.setSize(new Dimension(WORKDAYS_WIDTH, WORKDAYS_HEIGTH));
+			workdays_tb.setPreferredSize(new Dimension(WORKDAYS_WIDTH, WORKDAYS_HEIGTH));
+			JScrollPane workdays_scrtb = new JScrollPane(workdays_tb);
+			workdays_tb.setFillsViewportHeight(true);
+			//tasks_tb.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+			workdays_scrtb.setSize(new Dimension(WORKDAYS_WIDTH, WORKDAYS_HEIGTH));
+			workdays_scrtb.setPreferredSize(new Dimension(WORKDAYS_WIDTH, WORKDAYS_HEIGTH));
+			JLabel workday_lbl = new JLabel("Рабочие дни");
+			workday_lbl.setFont(new Font("Colibri", Font.PLAIN, 18));
+			workdaysPan.add(workday_lbl,BorderLayout.NORTH);
+			workdaysPan.add(workdays_scrtb,BorderLayout.CENTER);
+
+
+
 			panel.add(tasksPan,BorderLayout.CENTER);
+			panel.add(workdaysPan,BorderLayout.EAST);
 			add(panel);
 
 			WindowListener listener = new WindowAdapter() {
@@ -123,31 +145,73 @@
 
 		}
 
-		public static DefaultTableModel buildTableModel() {
+		public static DefaultTableModel buildTasksTableModel(String nametable) {
 	    // names of columns
-	    Vector<String> columnNames = new Vector<String>();
+			Vector<String> columnNames = new Vector<String>();
 			Vector<Vector<Object>> data = new Vector<Vector<Object>>();
 			try{
-	    int columnCount = tasks_rsmd.getColumnCount();
-	    for (int column = 1; column <= columnCount; column++) {
-	        columnNames.add(tasks_rsmd.getColumnName(column));
-	    }
+				ResultSet rs = st.executeQuery("select * from " + nametable);
+				ResultSetMetaData	 rsmd = rs.getMetaData();
+				try{
+			    int columnCount = rsmd.getColumnCount();
+			    for (int column = 1; column <= columnCount; column++) {
+			        columnNames.add(rsmd.getColumnName(column));
+			    }
 
-	    // data of the table
+			    // data of the table
 
-	    while (rs.next()) {
-	        Vector<Object> vector = new Vector<Object>();
-	        for (int columnIndex = 1; columnIndex <= columnCount; columnIndex++) {
-	            vector.add(rs.getObject(columnIndex));
-	        }
-	        data.add(vector);
-	    }
-		}catch(SQLException e){
-			System.out.println("tasks table not filled cause sqlexc");
-			e.printStackTrace();
-		}
+			    while (rs.next()) {
+			        Vector<Object> vector = new Vector<Object>();
+			        for (int columnIndex = 1; columnIndex <= columnCount; columnIndex++) {
+			            vector.add(rs.getObject(columnIndex));
+			        }
+			        data.add(vector);
+			    }
+				}catch(SQLException e){
+					System.out.println("tasks table not filled cause sqlexc");
+					e.printStackTrace();
+				}
+			}catch(SQLException rsmdExc){
+				System.out.println("resulsetmeta not created");
+				rsmdExc.printStackTrace();
+			}
 
 	    return new DefaultTableModel(data, columnNames);
+
+		}
+
+		public static DefaultTableModel buildWorkdaysTableModel(String nametable) {
+			// names of columns
+			Vector<String> columnNames = new Vector<String>();
+			Vector<Vector<Object>> data = new Vector<Vector<Object>>();
+			try{
+				ResultSet rs = st.executeQuery("select * from " + nametable);
+				ResultSetMetaData	 rsmd = rs.getMetaData();
+				try{
+					int columnCount = rsmd.getColumnCount();
+					for (int column = 1; column <= columnCount; column++) {
+							columnNames.add(rsmd.getColumnName(column));
+					}
+
+					// data of the table
+
+					while (rs.next()) {
+							Vector<Object> vector = new Vector<Object>();
+							for (int columnIndex = 1; columnIndex <= columnCount; columnIndex++) {
+									vector.add(rs.getObject(columnIndex));
+							}
+							data.add(vector);
+					}
+				}catch(SQLException e){
+					System.out.println("tasks table not filled cause sqlexc");
+					e.printStackTrace();
+				}
+			}catch(SQLException rsmdExc){
+				System.out.println("resulsetmeta not created");
+				rsmdExc.printStackTrace();
+			}
+
+			return new DefaultTableModel(data, columnNames);
 
 		}
 
