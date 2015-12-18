@@ -1,67 +1,109 @@
 	package burnapp;
 
 	import javax.swing.*;
+	import javax.swing.table.*;
 	import java.awt.*;
 	import java.awt.event.*;
 	import java.sql.*;
+	import java.util.*;
 
 	public class MainWindow extends JFrame {
 
 
 		private static final int VERTICAL_GAP = 10;
 		private static final int HORIZONTAL_GAP = 30;
-		private JButton addBttn = new JButton("Добавить задачу");
-		private JButton remBttn = new JButton("Удалить задачу");
-		private JButton cnnctBttn = new JButton("Подключиться к БД");
+		//private JButton addBttn = new JButton("Добавить задачу");
+		//private JButton remBttn = new JButton("Удалить задачу");
+		//private JButton cnnctBttn = new JButton("Подключиться к БД");
 		protected Connection conn = null;
+		protected Statement st = null;
+		protected static ResultSetMetaData tasks_rsmd = null;
+		protected static ResultSet rs = null;
 		private AddValues av = new AddValues(this, "New Entry");
 		private RemoveEntry re = new RemoveEntry(this, "Remove Entry");
-		private ConnectionData cd = new ConnectionData(this, "Connect");
-		private DBConnection dbc = new DBConnection();
+
 
 		public MainWindow(String title, Connection conn) {
 
 			super(title);
+
 			this.conn = conn;
+
+			try{
+				st = conn.createStatement();
+			}catch(SQLException stExc){
+				System.out.println("statement not created");
+				stExc.printStackTrace();
+			}
+
+			try{
+				 rs =  st.executeQuery("select * from tasks");
+				 tasks_rsmd = rs.getMetaData();
+			}catch(SQLException rsExc){
+				System.out.println("resulset not created");
+				rsExc.printStackTrace();
+			}
 
 			setLayout(new FlowLayout(FlowLayout.LEFT, HORIZONTAL_GAP, VERTICAL_GAP));
 
-			addBttn.addActionListener(new ActionListener() {
+			// addBttn.addActionListener(new ActionListener() {
+			//
+			// 	public void actionPerformed(ActionEvent e) {
+			//
+			// 		if(!av.isVisible()) {
+			// 			av.setVisible(true);
+			// 		}
+			// 	}
+			//
+			// });
+			//
+			// remBttn.addActionListener(new ActionListener() {
+			// 	public void actionPerformed(ActionEvent e) {
+			// 		if(!re.isVisible()) {
+			// 			re.setVisible(true);
+			// 		}
+			// 	}
+			// });
+			//
+			// cnnctBttn.addActionListener(new ActionListener() {
+			// 	public void actionPerformed(ActionEvent e) {
+			// 		if(!cd.isVisible()) {
+			// 			cd.setVisible(true);
+			// 		}
+			// 	}
+			// });
 
-				public void actionPerformed(ActionEvent e) {
+			// JPanel bttnPanel = new JPanel(new GridLayout(3, 1, HORIZONTAL_GAP, VERTICAL_GAP));
+			//
+			// bttnPanel.add(cnnctBttn);
+			// bttnPanel.add(addBttn);
+			// bttnPanel.add(remBttn);
+			//
+			// JPanel dataOverview = new JPanel(new GridLayout(3, 1));
+			//
+			// add(bttnPanel);
 
-					if(!av.isVisible()) {
-						av.setVisible(true);
-					}
-				}
+			JPanel panel = new JPanel(new BorderLayout());
 
-			});
+			JLabel head_lbl = new JLabel("Ведение Burndown диаграммы");
+			head_lbl.setFont(new Font("Tahoma", Font.PLAIN, 26));
+			head_lbl.setVisible(true);
+			panel.add(head_lbl,BorderLayout.NORTH);
 
-			remBttn.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					if(!re.isVisible()) {
-						re.setVisible(true);
-					}
-				}
-			});
+			JPanel tasksPan = new JPanel();
 
-			cnnctBttn.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					if(!cd.isVisible()) {
-						cd.setVisible(true);
-					}
-				}
-			});
-
-			JPanel bttnPanel = new JPanel(new GridLayout(3, 1, HORIZONTAL_GAP, VERTICAL_GAP));
-
-			bttnPanel.add(cnnctBttn);
-			bttnPanel.add(addBttn);
-			bttnPanel.add(remBttn);
-
-			JPanel dataOverview = new JPanel(new GridLayout(3, 1));
-
-			add(bttnPanel);
+			JTable tasks_tb = new JTable(buildTableModel());
+			tasks_tb.setSize(new Dimension(500, 200));
+			tasks_tb.setPreferredSize(new Dimension(500, 200));
+			JScrollPane tasks_scrtb = new JScrollPane(tasks_tb);
+			tasks_tb.setFillsViewportHeight(true);
+			//tasks_tb.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+			tasks_scrtb.setSize(new Dimension(500, 200));
+			tasks_scrtb.setPreferredSize(new Dimension(500, 200));
+			tasksPan.add(new Label("Задачи"));
+			tasksPan.add(tasks_scrtb);
+			panel.add(tasksPan,BorderLayout.CENTER);
+			add(panel);
 
 			WindowListener listener = new WindowAdapter() {
 				public void windowClosing(WindowEvent w) {
@@ -81,108 +123,31 @@
 
 		}
 
-		class ConnectionData extends JDialog {
+		public static DefaultTableModel buildTableModel() {
+	    // names of columns
+	    Vector<String> columnNames = new Vector<String>();
+			Vector<Vector<Object>> data = new Vector<Vector<Object>>();
+			try{
+	    int columnCount = tasks_rsmd.getColumnCount();
+	    for (int column = 1; column <= columnCount; column++) {
+	        columnNames.add(tasks_rsmd.getColumnName(column));
+	    }
 
-			private String login;
-			private String pass;
-			private String address;
-			private String port;
-			private String dbname;
+	    // data of the table
 
-			private JTextField login_tf = new JTextField(15);
-			private JPasswordField pass_tf = new JPasswordField(15);
-			private JTextField address_tf = new JTextField(15);
-			private JTextField port_tf = new JTextField(15);
-			private JTextField dbname_tf = new JTextField(15);
-			private JButton accept = new JButton("Подключиться к БД");
+	    while (rs.next()) {
+	        Vector<Object> vector = new Vector<Object>();
+	        for (int columnIndex = 1; columnIndex <= columnCount; columnIndex++) {
+	            vector.add(rs.getObject(columnIndex));
+	        }
+	        data.add(vector);
+	    }
+		}catch(SQLException e){
+			System.out.println("tasks table not filled cause sqlexc");
+			e.printStackTrace();
+		}
 
-
-			public ConnectionData(JFrame frame, String title) {
-				super(frame, title, true);
-
-
-				JPanel stuffPan = new JPanel(new GridLayout(7, 2));
-
-				stuffPan.add(new Label("Login: "));
-				stuffPan.add(login_tf);
-				stuffPan.add(new Label("Password: "));
-				stuffPan.add(pass_tf);
-				stuffPan.add(new Label("Address: "));
-				stuffPan.add(address_tf);
-				address_tf.setText("localhost");
-				stuffPan.add(new Label("Port: "));
-				port_tf.setText("5432");
-				stuffPan.add(port_tf);
-				stuffPan.add(new Label("Database: "));
-				stuffPan.add(dbname_tf);
-				stuffPan.add(accept);
-
-			//setVisible(true);
-
-				add(stuffPan);
-
-				pack();
-
-				accept.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
-						setLogin(login_tf.getText());
-						login_tf.setText("");
-						setPass(pass_tf.getText());
-						pass_tf.setText("");
-						setAddress(address_tf.getText());
-						address_tf.setText("localhost");
-						setPort(port_tf.getText());
-						port_tf.setText("5432");
-						setDBName(dbname_tf.getText());
-						dbname_tf.setText("");
-						dbc.connect();
-						dispose();
-					}
-				});
-
-
-
-			}
-
-			public void setLogin(String str) {
-				this.login = str;
-			}
-
-			public void setPass(String str) {
-				this.pass = str;
-			}
-
-			public void setAddress(String str) {
-				this.address = str;
-			}
-
-			public void setPort(String str) {
-				this.port = str;
-			}
-
-			public void setDBName(String str) {
-				this.dbname = str;
-			}
-
-			public String getLogin() {
-				return login;
-			}
-
-			public String getPass() {
-				return pass;
-			}
-
-			public String getAddress() {
-				return address;
-			}
-
-			public String getPort() {
-				return port;
-			}
-
-			public String getDBName() {
-				return dbname;
-			}
+	    return new DefaultTableModel(data, columnNames);
 
 		}
 
@@ -289,71 +254,6 @@
 			}
 		}
 
-		class DBConnection {
 
-
-			public DBConnection() { };
-
-			public void connect() {
-
-				try {
-					Class.forName("org.postgresql.Driver");
-					System.out.println("Database driver initialized.");
-				} catch (Exception e) {
-					System.out.println("Can't initialize the JDBC driver.");
-					e.printStackTrace();
-				}
-
-				try {
-					conn = DriverManager.getConnection("jdbc:postgresql://" +
-						cd.getAddress() + ":" + cd.getPort() +
-						"/" + cd.getDBName(), cd.getLogin(), cd.getPass());
-					System.out.println("Connected to database.");
-					try{
-					Statement st = conn.createStatement();
-					st.executeUpdate("create table if not exists Tasks("+
-						"id serial primary key,"+
-						"title text not null unique,"+
-						"labor_vol integer not null,"+
-						"status text not null check(status in ('Выполнено','Запланировано')),"+
-						"readyday date check(status = 'Выполнено' or null));");
-					System.out.println("Table tasks created or exists");
-					st.executeUpdate("create table if not exists Days("+
-						"id serial primary key,"+
-						"workday date not null unique,"+
-						"labor_vol int not null);");
-						System.out.println("Table days created or exists");
-					st.close();
-				}catch (Exception r) {
-					r.printStackTrace();
-					System.out.println("Table tasks or days not added");
-				}
-
-
-				} catch (SQLException e) {
-					System.out.println("Some SQL Exception encountered.");
-					JOptionPane.showMessageDialog(null, "Wrong connection details!", "Some fucking error", JOptionPane.ERROR_MESSAGE);
-
-					e.printStackTrace();
-				}
-
-			}
-
-			public void closeConnection() {
-				try {
-					conn.close();
-					System.out.println("Connection closed.");
-				} catch (Exception e) {
-					System.out.println();
-					e.printStackTrace();
-				}
-
-			}
-
-			public Connection returnConnection() {
-				return conn;
-			}
-
-		}
 
 	}
