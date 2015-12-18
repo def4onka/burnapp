@@ -13,9 +13,9 @@
 		private static final int VERTICAL_GAP = 10;
 		private static final int HORIZONTAL_GAP = 30;
 		private static final int TASKS_WIDTH = 600;
-		private static final int TASKS_HEIGTH = 200;
+		private static final int TASKS_HEIGTH = 300;
 		private static final int WORKDAYS_WIDTH = 300;
-		private static final int WORKDAYS_HEIGTH = 200;
+		private static final int WORKDAYS_HEIGTH = 300;
 		//private JButton addBttn = new JButton("Добавить задачу");
 		//private JButton remBttn = new JButton("Удалить задачу");
 		//private JButton cnnctBttn = new JButton("Подключиться к БД");
@@ -121,10 +121,36 @@
 			workdaysPan.add(workday_lbl,BorderLayout.NORTH);
 			workdaysPan.add(workdays_scrtb,BorderLayout.CENTER);
 
+			JPanel tasks_bttns = new JPanel(new BorderLayout());
+			JButton change_task = new JButton("Изменить");
+			JButton delete_task = new JButton("Удалить");
+			JButton addnew_task = new JButton("Добавить");
 
+			JPanel chdel = new JPanel();
+			chdel.add(change_task);
+			chdel.add(delete_task);
+			tasks_bttns.add(chdel,BorderLayout.CENTER);
+			tasks_bttns.add(addnew_task,BorderLayout.EAST);
 
+			JPanel workdays_bttns = new JPanel(new BorderLayout());
+			JButton change_workday = new JButton("Изменить");
+			JButton delete_workday = new JButton("Удалить");
+			JButton addnew_workday = new JButton("Добавить");
+
+			JPanel chdelwd = new JPanel();
+			chdelwd.add(change_workday);
+			chdelwd.add(delete_workday);
+			workdays_bttns.add(chdelwd,BorderLayout.CENTER);
+			workdays_bttns.add(addnew_workday,BorderLayout.EAST);
+
+			JButton showDiag_bttn = new JButton("Показать диграмму");
+
+			tasksPan.add(tasks_bttns,BorderLayout.SOUTH);
+			workdaysPan.add(workdays_bttns,BorderLayout.SOUTH);
 			panel.add(tasksPan,BorderLayout.CENTER);
 			panel.add(workdaysPan,BorderLayout.EAST);
+			panel.add(showDiag_bttn,BorderLayout.SOUTH);
+
 			add(panel);
 
 			WindowListener listener = new WindowAdapter() {
