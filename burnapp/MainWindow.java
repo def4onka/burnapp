@@ -384,6 +384,7 @@
 
 				sendToDbBttn.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
+						if(isDateStr(date_tf.getText())){
 						try{
 							Statement statement = conn.createStatement();
 							if(isDone) statement.executeUpdate("insert into tasks (title, note, labor_vol, status, readyday) values (" +
@@ -407,7 +408,10 @@
 
 						setVisible(false);
 
-					}
+				}else{
+					JOptionPane.showMessageDialog(null, "Неверный формат даты", "Ошибочка((", JOptionPane.ERROR_MESSAGE);
+				}
+			}
 				});
 
 
@@ -444,6 +448,7 @@
 
 				sendToDbBttn.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
+						if(isDateStr(date_tf.getText())){
 						try{
 							Statement statement = conn.createStatement();
 							statement.executeUpdate("insert into workdays (workday, labor_vol) values ( '" + date_tf.getText() + "', " + Integer.parseInt(labor_vol_tf.getText()) +");");
@@ -459,7 +464,10 @@
 
 						setVisible(false);
 
-					}
+				}else{
+					JOptionPane.showMessageDialog(null, "Неверный формат даты", "Ошибочка((", JOptionPane.ERROR_MESSAGE);
+				}
+			}
 				});
 
 
