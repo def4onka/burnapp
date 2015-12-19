@@ -5,12 +5,13 @@
 	import java.awt.*;
 	import java.awt.event.*;
 	import java.sql.*;
+	//import java.sql.Date.*;
 	import java.util.*;
-	import java.sql.Date.*;
+	//import java.util.Date;
 	import org.knowm.xchart.SwingWrapper;
 	import org.knowm.xchart.Chart;
 	import org.knowm.xchart.XChartPanel;
-	import java.text.SimpleDateFormat;
+	import java.text.*;
 	import java.util.regex.*;
 
 	public class MainWindow extends JFrame {
@@ -82,23 +83,35 @@
 							public void actionPerformed(ActionEvent e) {
 								//if(begin_tf.getText()<end_tf.getText()){
 								if (isDateStr(begin_tf.getText()) && isDateStr(end_tf.getText())){
-								try{
-									st.executeQuery("UPDATE sprintdates SET begindate = to_date('"+ begin_tf.getText() +"','yyyy-mm-dd'), enddate = to_date('"+ end_tf.getText() +"','yyyy-mm-dd');");
-									JOptionPane.showMessageDialog(null, "Добавлены", "Уведомленька", JOptionPane.ERROR_MESSAGE);
-								}catch(SQLException fieldExc){
+									DateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 									try{
-										System.out.println("dates of sprint not updated");
-										st.executeQuery("insert into sprintdates (begindate, enddate)  values ('"+ begin_tf.getText()+"','"+ end_tf.getText() +"');");
-										JOptionPane.showMessageDialog(null, "Добавлены", "Уведомленька", JOptionPane.ERROR_MESSAGE);
-									}catch(SQLException fieldinsertExc){
-										System.out.println("dates of sprint not inserted");
-										fieldinsertExc.printStackTrace();
+									java.util.Date d1 = sdf.parse(begin_tf.getText());
+									java.util.Date d2 = sdf.parse(end_tf.getText());
+									if(d2.after(d1) && d1.before(d2)){
+										try{
+											st.executeQuery("UPDATE sprintdates SET begindate = to_date('"+ begin_tf.getText() +"','yyyy-mm-dd'), enddate = to_date('"+ end_tf.getText() +"','yyyy-mm-dd');");
+											JOptionPane.showMessageDialog(null, "Добавлены", "Уведомленька", JOptionPane.ERROR_MESSAGE);
+										}catch(SQLException fieldExc){
+											try{
+												System.out.println("dates of sprint not updated");
+												st.executeQuery("insert into sprintdates (begindate, enddate)  values ('"+ begin_tf.getText()+"','"+ end_tf.getText() +"');");
+												JOptionPane.showMessageDialog(null, "Добавлены", "Уведомленька", JOptionPane.ERROR_MESSAGE);
+											}catch(SQLException fieldinsertExc){
+												System.out.println("dates of sprint not inserted");
+												fieldinsertExc.printStackTrace();
+											}
+										fieldExc.printStackTrace();
 									}
-									fieldExc.printStackTrace();
+								}else{
+									JOptionPane.showMessageDialog(null, "Дата начала должна быть меньше даты окончания", "Ошибочка((", JOptionPane.ERROR_MESSAGE);
 								}
+							}catch(Exception parseExc){
+								parseExc.printStackTrace();
+							}
 							}else{
 								JOptionPane.showMessageDialog(null, "Неверный формат даты", "Ошибочка((", JOptionPane.ERROR_MESSAGE);
 							}
+
 						}
 
 						});
