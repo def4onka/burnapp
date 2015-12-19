@@ -59,8 +59,9 @@
 			setPeriodFields("sprintdates");
 
 			setLayout(new FlowLayout(FlowLayout.LEFT, HORIZONTAL_GAP, VERTICAL_GAP));
-
-			JPanel panel = new JPanel(new BorderLayout());
+			BorderLayout bl = new BorderLayout();
+			bl.setHgap(30);
+			JPanel panel = new JPanel(bl);
 			JPanel headPan = new JPanel(new BorderLayout());
 
 			JLabel head_lbl = new JLabel("Ведение Burndown диаграммы");
