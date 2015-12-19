@@ -44,8 +44,6 @@ private static final long serialVersionUID = 1L;
       }
       days.add(vector1);
       days.add(vector2);
-      vector1.clear();
-      vector2.clear();
       }catch(SQLException e){
         e.printStackTrace();
       }
@@ -63,8 +61,6 @@ private static final long serialVersionUID = 1L;
       }
       days.add(vector1);
       days.add(vector2);
-      vector1.clear();
-      vector2.clear();
       }catch(SQLException e){
         e.printStackTrace();
       }
@@ -159,8 +155,6 @@ private static final long serialVersionUID = 1L;
       y3Data.add(sumT);
     }
   }
-  tasksDays.clear();
-  days.clear();
   } catch (ParseException e) {
   e.printStackTrace();
   }
