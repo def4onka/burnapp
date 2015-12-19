@@ -55,7 +55,7 @@
 				System.out.println("statement not created");
 				stExc.printStackTrace();
 			}
-			//setPeriodFields("sprintdates");
+			setPeriodFields("sprintdates");
 
 			setLayout(new FlowLayout(FlowLayout.LEFT, HORIZONTAL_GAP, VERTICAL_GAP));
 
@@ -74,24 +74,27 @@
 			JButton ok_bt = new JButton("OK");
 			periodPan.add(ok_bt);
 
-			// ok_bt.addActionListener(new ActionListener() {
-			//
-			// 				public void actionPerformed(ActionEvent e) {
-			// 					//if(begin_tf.getText()<end_tf.getText()){
-			// 						try{
-			// 						st.executeQuery("UPDATE sprintdates SET begindate = to_date('"+ begin_tf.getText() +"','yyyy-mm-dd'), enddate = to_date('"+ end_tf.getText() +"','yyyy-mm-dd') WHERE id=1;");
-			// 						JOptionPane.showMessageDialog(null, "Добавлены", "Some fucking error", JOptionPane.ERROR_MESSAGE);
-			// 					}catch(SQLException fieldExc){
-			// 						System.out.println("dates of sprint goes wrong");
-			// 						fieldExc.printStackTrace();
-			// 					}
-			// 					// }
-			// 					// else{
-			// 					// 	  JOptionPane.showMessageDialog(null, "Дата начала должна быть раньше даты окончания спринта", "Some fucking error", JOptionPane.ERROR_MESSAGE);
-			// 					// }
-			// 				}
-			//
-			// 			});
+			ok_bt.addActionListener(new ActionListener() {
+
+							public void actionPerformed(ActionEvent e) {
+								//if(begin_tf.getText()<end_tf.getText()){
+									try{
+									st.executeQuery("UPDATE sprintdates SET begindate = to_date('"+ begin_tf.getText() +"','yyyy-mm-dd'), enddate = to_date('"+ end_tf.getText() +"','yyyy-mm-dd');");
+									JOptionPane.showMessageDialog(null, "Добавлены", "Some fucking error", JOptionPane.ERROR_MESSAGE);
+								}catch(SQLException fieldExc){
+									try{
+										System.out.println("dates of sprint not updated");
+										st.executeQuery("insert into sprintdates (begindate, enddate)  values ('"+ begin_tf.getText()+"','"+ end_tf.getText() +"');");
+										JOptionPane.showMessageDialog(null, "Добавлены", "Some fucking error", JOptionPane.ERROR_MESSAGE);
+									}catch(SQLException fieldinsertExc){
+										System.out.println("dates of sprint not inserted");
+										fieldinsertExc.printStackTrace();
+									}
+									fieldExc.printStackTrace();
+								}
+							}
+
+						});
 
 			headPan.add(periodPan);
 			panel.add(headPan,BorderLayout.NORTH);
@@ -236,25 +239,26 @@
 
 		}
 
-		// public static void setPeriodFields(String nametable){
-		// 	try{
-		// 		ResultSet rs = st.executeQuery("select * from " + nametable);
-		// 		SimpleDateFormat sdf = new SimpleDateFormat("YYYY-MM-dd");
-		// 		//Date convertedCurrentDate = sdf.parse("2013-09-18");
-		// 		rs.next();
-		// 		 try{
-		// 			 Date s1 = rs.getDate(1);
-		// 			 Date s2 = rs.getDate(2);
- 	// 				begin_tf.setText(s1);
-		// 			end_tf.setText(s2);
-		// 		 }catch(Exception parseExc){
-		// 		 	parseExc.printStackTrace();
-		// 		 }
-		// 	}catch(SQLException rsmdExc){
-		// 		System.out.println("setfields not success");
-		// 		rsmdExc.printStackTrace();
-		// 	}
-		// }
+		public static void setPeriodFields(String nametable){
+			try{
+				ResultSet rs = st.executeQuery("select * from " + nametable);
+				java.util.Date date1 = null;
+				java.util.Date date2 = null;
+				rs.next();
+				Timestamp timestamp1 = rs.getTimestamp("begindate");
+				Timestamp timestamp2 = rs.getTimestamp("enddate");
+				if (timestamp1 != null && timestamp2 != null)
+    			date1 = new java.util.Date(timestamp1.getTime());
+					date2 = new java.util.Date(timestamp2.getTime());
+
+ 					begin_tf.setText(new SimpleDateFormat("yyyy-MM-dd").format(date1));
+					end_tf.setText(new SimpleDateFormat("yyyy-MM-dd").format(date2));
+
+			}catch(SQLException rsmdExc){
+				System.out.println("setfields not success");
+				rsmdExc.printStackTrace();
+			}
+		}
 
 		// public static String formatDateString(String str){
 		// 	String parsed = new String(10);
