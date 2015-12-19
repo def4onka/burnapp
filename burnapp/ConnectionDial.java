@@ -80,6 +80,7 @@ class ConnectionDial extends JFrame{
           st.executeUpdate("create table if not exists tasks("+
             "id serial primary key,"+
             "title text not null unique,"+
+            "note text,"+
             "labor_vol integer not null,"+
             "status text not null check(status in ('Выполнено','Запланировано')),"+
             "readyday date check(status = 'Выполнено' or null));");
