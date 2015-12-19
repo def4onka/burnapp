@@ -143,7 +143,7 @@
 			chdel.add(change_task);
 			chdel.add(delete_task);
 			tasks_bttns.add(chdel,BorderLayout.CENTER);
-			//tasks_bttns.add(addnew_task,BorderLayout.EAST);
+			tasks_bttns.add(addnew_task,BorderLayout.EAST);
 
 			JPanel workdays_bttns = new JPanel(new BorderLayout());
 
