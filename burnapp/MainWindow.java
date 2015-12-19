@@ -168,7 +168,6 @@
 									JavaPaintUI exampleChart = new JavaPaintUI(conn/*,begin_tf.getText(),end_tf.getText()*/);
 									Chart chart = exampleChart.getChart();
 									JFrame frame = new JFrame("Диаграмма");
-									frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 									JPanel chartPanel = new XChartPanel(chart);
 									frame.add(chartPanel);
 									frame.pack();
