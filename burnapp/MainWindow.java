@@ -41,6 +41,7 @@
 		static JTextField end_tf = new JTextField(10);
 
 		private AddValues av = new AddValues(this, "Новая задача");
+		private AddValuesWD avwd = new AddValuesWD(this, "Новый рабочий день");
 		//private RemoveEntry re = new RemoveEntry(this, "Удалить задачу");
 
 
@@ -168,6 +169,17 @@
 
 								if(!av.isVisible()) {
 									av.setVisible(true);
+								}
+							}
+
+						});
+
+			addnew_workday.addActionListener(new ActionListener() {
+
+							public void actionPerformed(ActionEvent e) {
+
+								if(!avwd.isVisible()) {
+									avwd.setVisible(true);
 								}
 							}
 
@@ -402,6 +414,56 @@
 			}
 		}
 
+		class AddValuesWD extends JDialog {
 
+			private JTextField labor_vol_tf = new JTextField(10);
+			private JTextField date_tf = new JTextField(10);
+			private JButton sendToDbBttn = new JButton("Добавить");
+
+
+			public AddValuesWD(JFrame frame, String title) {
+
+				super(frame, title, true);
+
+				JPanel container = new JPanel(new GridLayout(3, 1));
+
+				JPanel stuffPanel = new JPanel(new GridLayout(2, 2));
+				stuffPanel.add(new Label("Дата: "));
+				stuffPanel.add(date_tf);
+				stuffPanel.add(new Label("Трудоемкость:"));
+				stuffPanel.add(labor_vol_tf);
+
+
+				container.add(new Label("Введите данные добавляемого рабочего дня"));
+				container.add(stuffPanel);
+				container.add(sendToDbBttn);
+				add(container);
+
+				pack();
+				setLocationRelativeTo(frame);
+
+				sendToDbBttn.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						try{
+							Statement statement = conn.createStatement();
+							statement.executeUpdate("insert into workdays (workday, labor_vol) values ( '" + date_tf.getText() + "', " + Integer.parseInt(labor_vol_tf.getText()) +");");
+
+							labor_vol_tf.setText("");
+							date_tf.setText("");
+							pack();
+							statement.close();
+						} catch (Exception r) {
+							r.printStackTrace();
+							System.out.println("Oops, here goes some shit again");
+						}
+
+						setVisible(false);
+
+					}
+				});
+
+
+			}
+		}
 
 	}
