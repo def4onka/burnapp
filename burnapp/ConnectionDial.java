@@ -89,7 +89,13 @@ class ConnectionDial extends JFrame{
             "id serial primary key,"+
             "workday date not null unique,"+
             "labor_vol int not null);");
-            System.out.println("Table days created or exists");
+          System.out.println("Table workdays created or exists");
+          st.executeUpdate("create table if not exists sprintdates("+
+            "id serial primary key,"+
+            "begindate date not null,"+
+            "enddate date not null);");
+          System.out.println("Table sprintdates created or exists");
+
           st.close();
 
           MainWindow mw = new MainWindow("Burndown app", conn);

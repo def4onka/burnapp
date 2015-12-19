@@ -6,9 +6,11 @@
 	import java.awt.event.*;
 	import java.sql.*;
 	import java.util.*;
+	import java.sql.Date.*;
 	import org.knowm.xchart.SwingWrapper;
 	import org.knowm.xchart.Chart;
 	import org.knowm.xchart.XChartPanel;
+	import java.text.SimpleDateFormat;
 
 	public class MainWindow extends JFrame {
 
@@ -34,8 +36,8 @@
 		JButton delete_workday = new JButton("Удалить");
 		JButton addnew_workday = new JButton("Добавить");
 		JButton showDiag_bttn = new JButton("Показать диграмму");
-		JTextField begin_tf = new JTextField(10);
-		JTextField end_tf = new JTextField(10);
+		static JTextField begin_tf = new JTextField(10);
+		static JTextField end_tf = new JTextField(10);
 
 		private AddValues av = new AddValues(this, "Новая задача");
 		//private RemoveEntry re = new RemoveEntry(this, "Удалить задачу");
@@ -53,6 +55,7 @@
 				System.out.println("statement not created");
 				stExc.printStackTrace();
 			}
+			//setPeriodFields("sprintdates");
 
 			setLayout(new FlowLayout(FlowLayout.LEFT, HORIZONTAL_GAP, VERTICAL_GAP));
 
@@ -66,28 +69,29 @@
 			JPanel periodPan = new JPanel();
 			periodPan.add(new Label("Дата начала спринта"));
 			periodPan.add(begin_tf);
-			JButton begin_bt = new JButton("OK");
-			periodPan.add(begin_bt);
-			periodPan.add(new Label("Дата начала спринта"));
+			periodPan.add(new Label("Дата окончания спринта"));
 			periodPan.add(end_tf);
-			JButton end_bt = new JButton("OK");
-			periodPan.add(end_bt);
+			JButton ok_bt = new JButton("OK");
+			periodPan.add(ok_bt);
 
-			begin_bt.addActionListener(new ActionListener() {
-
-							public void actionPerformed(ActionEvent e) {
-								begin_tf.setEditable(false);
-							}
-
-						});
-
-			end_bt.addActionListener(new ActionListener() {
-
-							public void actionPerformed(ActionEvent e) {
-								end_tf.setEditable(false);
-							}
-
-						});
+			// ok_bt.addActionListener(new ActionListener() {
+			//
+			// 				public void actionPerformed(ActionEvent e) {
+			// 					//if(begin_tf.getText()<end_tf.getText()){
+			// 						try{
+			// 						st.executeQuery("UPDATE sprintdates SET begindate = to_date('"+ begin_tf.getText() +"','yyyy-mm-dd'), enddate = to_date('"+ end_tf.getText() +"','yyyy-mm-dd') WHERE id=1;");
+			// 						JOptionPane.showMessageDialog(null, "Добавлены", "Some fucking error", JOptionPane.ERROR_MESSAGE);
+			// 					}catch(SQLException fieldExc){
+			// 						System.out.println("dates of sprint goes wrong");
+			// 						fieldExc.printStackTrace();
+			// 					}
+			// 					// }
+			// 					// else{
+			// 					// 	  JOptionPane.showMessageDialog(null, "Дата начала должна быть раньше даты окончания спринта", "Some fucking error", JOptionPane.ERROR_MESSAGE);
+			// 					// }
+			// 				}
+			//
+			// 			});
 
 			headPan.add(periodPan);
 			panel.add(headPan,BorderLayout.NORTH);
@@ -232,6 +236,37 @@
 
 		}
 
+		// public static void setPeriodFields(String nametable){
+		// 	try{
+		// 		ResultSet rs = st.executeQuery("select * from " + nametable);
+		// 		SimpleDateFormat sdf = new SimpleDateFormat("YYYY-MM-dd");
+		// 		//Date convertedCurrentDate = sdf.parse("2013-09-18");
+		// 		rs.next();
+		// 		 try{
+		// 			 Date s1 = rs.getDate(1);
+		// 			 Date s2 = rs.getDate(2);
+ 	// 				begin_tf.setText(s1);
+		// 			end_tf.setText(s2);
+		// 		 }catch(Exception parseExc){
+		// 		 	parseExc.printStackTrace();
+		// 		 }
+		// 	}catch(SQLException rsmdExc){
+		// 		System.out.println("setfields not success");
+		// 		rsmdExc.printStackTrace();
+		// 	}
+		// }
+
+		// public static String formatDateString(String str){
+		// 	String parsed = new String(10);
+		// 	int i=9;
+		// 	while(i-->=0){
+		// 		if(str.charAt(i)!="-")
+		// 		parsed.charAt(9-i)=str.charAt(i);
+		// 		else
+		// 		parsed.charAt(9-i)="/";
+		// 	}
+		// }
+
 
 		class RemoveEntry extends JDialog {
 
@@ -335,7 +370,7 @@
 						try{
 							Statement statement = conn.createStatement();
 							if(isDone) statement.executeUpdate("insert into tasks (title, note, labor_vol, status, readyday) values (" +
-												"'" + title_tf.getText() + "', '"+ note_tf.getText() +"'," + Integer.parseInt(labor_vol_tf.getText()) +",'Выполнено', to_date('" + date_tf.getText() + "', 'dd/mm/yyyy'));");
+												"'" + title_tf.getText() + "', '"+ note_tf.getText() +"'," + Integer.parseInt(labor_vol_tf.getText()) +",'Выполнено', to_date('" + date_tf.getText() + "', 'yyyy-mm-dd'));");
 
 							else
 							statement.executeUpdate("insert into tasks (title, note, labor_vol,status) values (" +
