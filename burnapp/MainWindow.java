@@ -11,6 +11,7 @@
 	import org.knowm.xchart.Chart;
 	import org.knowm.xchart.XChartPanel;
 	import java.text.SimpleDateFormat;
+	import java.util.regex.*;
 
 	public class MainWindow extends JFrame {
 
@@ -78,21 +79,25 @@
 
 							public void actionPerformed(ActionEvent e) {
 								//if(begin_tf.getText()<end_tf.getText()){
-									try{
+								if (isDateStr(begin_tf.getText()) && isDateStr(end_tf.getText())){
+								try{
 									st.executeQuery("UPDATE sprintdates SET begindate = to_date('"+ begin_tf.getText() +"','yyyy-mm-dd'), enddate = to_date('"+ end_tf.getText() +"','yyyy-mm-dd');");
-									JOptionPane.showMessageDialog(null, "Добавлены", "Some fucking error", JOptionPane.ERROR_MESSAGE);
+									JOptionPane.showMessageDialog(null, "Добавлены", "Уведомленька", JOptionPane.ERROR_MESSAGE);
 								}catch(SQLException fieldExc){
 									try{
 										System.out.println("dates of sprint not updated");
 										st.executeQuery("insert into sprintdates (begindate, enddate)  values ('"+ begin_tf.getText()+"','"+ end_tf.getText() +"');");
-										JOptionPane.showMessageDialog(null, "Добавлены", "Some fucking error", JOptionPane.ERROR_MESSAGE);
+										JOptionPane.showMessageDialog(null, "Добавлены", "Уведомленька", JOptionPane.ERROR_MESSAGE);
 									}catch(SQLException fieldinsertExc){
 										System.out.println("dates of sprint not inserted");
 										fieldinsertExc.printStackTrace();
 									}
 									fieldExc.printStackTrace();
 								}
+							}else{
+								JOptionPane.showMessageDialog(null, "Неверный формат даты", "Ошибочка((", JOptionPane.ERROR_MESSAGE);
 							}
+						}
 
 						});
 
@@ -137,7 +142,7 @@
 			chdel.add(change_task);
 			chdel.add(delete_task);
 			tasks_bttns.add(chdel,BorderLayout.CENTER);
-			tasks_bttns.add(addnew_task,BorderLayout.EAST);
+			//tasks_bttns.add(addnew_task,BorderLayout.EAST);
 
 			JPanel workdays_bttns = new JPanel(new BorderLayout());
 
@@ -260,16 +265,11 @@
 			}
 		}
 
-		// public static String formatDateString(String str){
-		// 	String parsed = new String(10);
-		// 	int i=9;
-		// 	while(i-->=0){
-		// 		if(str.charAt(i)!="-")
-		// 		parsed.charAt(9-i)=str.charAt(i);
-		// 		else
-		// 		parsed.charAt(9-i)="/";
-		// 	}
-		// }
+		public static boolean isDateStr(String testString){
+	         Pattern p = Pattern.compile("[0-9]{4}-(0[1-9]|1[012])-(0[1-9]|1[0-9]|2[0-9]|3[01])");
+	         Matcher m = p.matcher(testString);
+	         return m.matches();
+	 }
 
 
 		class RemoveEntry extends JDialog {
