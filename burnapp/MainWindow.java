@@ -40,6 +40,8 @@
 		JButton showDiag_bttn = new JButton("Показать диграмму");
 		static JTextField begin_tf = new JTextField(10);
 		static JTextField end_tf = new JTextField(10);
+		private DefaultTableModel tasksModel;
+		private DefaultTableModel workdaysModel;
 
 		private AddValues av = new AddValues(this, "Новая задача");
 		private AddValuesWD avwd = new AddValuesWD(this, "Новый рабочий день");
@@ -83,10 +85,10 @@
 							public void actionPerformed(ActionEvent e) {
 								//if(begin_tf.getText()<end_tf.getText()){
 								if (isDateStr(begin_tf.getText()) && isDateStr(end_tf.getText())){
-									DateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+
 									try{
-									java.util.Date d1 = sdf.parse(begin_tf.getText());
-									java.util.Date d2 = sdf.parse(end_tf.getText());
+									java.util.Date d1 =  new SimpleDateFormat("yyyy-MM-dd").parse(begin_tf.getText());
+									java.util.Date d2 =  new SimpleDateFormat("yyyy-MM-dd").parse(end_tf.getText());
 									if(d2.after(d1) && d1.before(d2)){
 										try{
 											st.executeQuery("UPDATE sprintdates SET begindate = to_date('"+ begin_tf.getText() +"','yyyy-mm-dd'), enddate = to_date('"+ end_tf.getText() +"','yyyy-mm-dd');");
@@ -120,8 +122,8 @@
 			panel.add(headPan,BorderLayout.NORTH);
 			JPanel tasksPan = new JPanel(new BorderLayout());
 			tasksPan.setSize(700,500);
-
-			JTable tasks_tb = new JTable(buildTableModel("tasks"));
+			tasksModel = buildTableModel("tasks");
+			JTable tasks_tb = new JTable(tasksModel);
 			//tasks_tb.getDataVector();
 			tasks_tb.setSize(new Dimension(TASKS_WIDTH, TASKS_HEIGTH));
 			tasks_tb.setPreferredSize(new Dimension(TASKS_WIDTH, TASKS_HEIGTH));
@@ -137,8 +139,8 @@
 
 			JPanel workdaysPan = new JPanel(new BorderLayout());
 			workdaysPan.setSize(300,200);
-
-			JTable workdays_tb = new JTable(buildTableModel("workdays"));
+			workdaysModel = buildTableModel("workdays");
+			JTable workdays_tb = new JTable(workdaysModel);
 			workdays_tb.setSize(new Dimension(WORKDAYS_WIDTH, WORKDAYS_HEIGTH));
 			workdays_tb.setPreferredSize(new Dimension(WORKDAYS_WIDTH, WORKDAYS_HEIGTH));
 			JScrollPane workdays_scrtb = new JScrollPane(workdays_tb);
@@ -297,6 +299,10 @@
 	         return m.matches();
 	 }
 
+	 private void addRow(Object[] obj, DefaultTableModel customModel) {
+		 customModel.addRow(obj);
+	 }
+
 
 		class RemoveEntry extends JDialog {
 
@@ -397,15 +403,19 @@
 
 				sendToDbBttn.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
-						if(isDateStr(date_tf.getText())){
+						Object[] task_row = null;
 						try{
 							Statement statement = conn.createStatement();
-							if(isDone) statement.executeUpdate("insert into tasks (title, note, labor_vol, status, readyday) values (" +
+							if(isDone){
+								statement.executeUpdate("insert into tasks (title, note, labor_vol, status, readyday) values (" +
 												"'" + title_tf.getText() + "', '"+ note_tf.getText() +"'," + Integer.parseInt(labor_vol_tf.getText()) +",'Выполнено', to_date('" + date_tf.getText() + "', 'yyyy-mm-dd'));");
-
-							else
+							task_row = new Object[]{title_tf.getText(),note_tf.getText()+"",Integer.parseInt(labor_vol_tf.getText()), "Выполнено", date_tf.getText()};
+							}else{
 							statement.executeUpdate("insert into tasks (title, note, labor_vol,status) values (" +
 								"'" + title_tf.getText() + "', '"+ note_tf.getText() +"'," + Integer.parseInt(labor_vol_tf.getText()) +", "+ "'Запланировано'" +");");//to_date('" + date_tf.getText() + "', 'mm/dd/yyyy'));");
+								task_row = new Object[]{title_tf.getText(),note_tf.getText()+"",Integer.parseInt(labor_vol_tf.getText()), "Запланировано"};
+							}
+							addRow(task_row,tasksModel);
 							labor_vol_tf.setText("");
 							isDone = false;
 							done_cb.setSelected(false);
@@ -421,9 +431,7 @@
 
 						setVisible(false);
 
-				}else{
-					JOptionPane.showMessageDialog(null, "Неверный формат даты", "Ошибочка((", JOptionPane.ERROR_MESSAGE);
-				}
+
 			}
 				});
 
