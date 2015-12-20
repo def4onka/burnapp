@@ -13,7 +13,8 @@ class ConnectionDial extends JFrame{
   private String address;
   private String port;
   private String dbname;
-
+  final static boolean shouldFill = true;
+  final static boolean shouldWeightX = true;
   private JTextField login_tf = new JTextField(15);
   private JPasswordField pass_tf = new JPasswordField(15);
   private JTextField address_tf = new JTextField(15);
@@ -26,8 +27,8 @@ class ConnectionDial extends JFrame{
   public ConnectionDial(){
 
     super("Подключение");
-
-    JPanel stuffPan = new JPanel(new GridLayout(7, 2));
+/*
+    JPanel stuffPan = new JPanel(new GridLayout(6, 2));
 
     stuffPan.add(new Label("Login: "));
     stuffPan.add(login_tf);
@@ -42,10 +43,71 @@ class ConnectionDial extends JFrame{
     stuffPan.add(new Label("Database: "));
     stuffPan.add(dbname_tf);
     stuffPan.add(accept);
-
     add(stuffPan);
-//pack();
+*/
+    login_tf.setText("def11");
+    pass_tf.setText("wordpass");
+    address_tf.setText("localhost");
+    port_tf.setText("5432");
+    dbname_tf.setText("burn");
 
+    JPanel stuffPan = new JPanel(new GridBagLayout());
+    GridBagConstraints c = new GridBagConstraints();
+    if (shouldFill) {
+                c.fill = GridBagConstraints.HORIZONTAL;
+    }
+    if (shouldWeightX) {
+                   c.weightx = 1.0;
+    }
+    c.insets = new Insets(0, 15, 0, 15);
+    c.fill = GridBagConstraints.HORIZONTAL;
+    c.ipady = 12;
+    //c.weighty = 0.5;
+    c.gridx = 0;
+    c.gridy = 0;
+    stuffPan.add(new Label("Login: "), c);
+    c.ipady = 12;
+    c.gridx = 1;
+    c.gridy = 0;
+    stuffPan.add(login_tf, c);
+
+    //c.weighty = 5.0;
+    c.gridx = 0;
+    c.gridy = 1;
+    stuffPan.add(new Label("Password: "), c);
+    c.gridx = 1;
+    c.gridy = 1;
+    stuffPan.add(pass_tf, c);
+
+    //c.weighty = 0.5;
+    c.gridx = 0;
+    c.gridy = 2;
+    stuffPan.add(new Label("Address: "), c);
+    c.gridx = 1;
+    c.gridy = 2;
+    stuffPan.add(address_tf, c);
+
+    //c.weighty = 0.5;
+    c.gridx = 0;
+    c.gridy = 3;
+    stuffPan.add(new Label("Port: "), c);
+    c.gridx = 1;
+    c.gridy = 3;
+    stuffPan.add(port_tf, c);
+
+    //c.weighty = 0.5;
+    c.gridx = 0;
+    c.gridy = 4;
+    stuffPan.add(new Label("Database: "), c);
+    c.gridx = 1;
+    c.gridy = 4;
+    stuffPan.add(dbname_tf, c);
+
+    c.gridwidth = 2;
+    c.gridx = 0;
+    c.gridy = 5;
+    stuffPan.add(accept, c);
+    add(stuffPan);
 
     accept.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {

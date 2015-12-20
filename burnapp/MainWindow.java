@@ -5,9 +5,7 @@
 	import java.awt.*;
 	import java.awt.event.*;
 	import java.sql.*;
-	//import java.sql.Date.*;
 	import java.util.*;
-	//import java.util.Date;
 	import org.knowm.xchart.SwingWrapper;
 	import org.knowm.xchart.Chart;
 	import org.knowm.xchart.XChartPanel;
@@ -42,7 +40,7 @@
 
 		private AddValues av = new AddValues(this, "Новая задача");
 		private AddValuesWD avwd = new AddValuesWD(this, "Новый рабочий день");
-		//private RemoveEntry re = new RemoveEntry(this, "Удалить задачу");
+
 
 
 		public MainWindow(String title, Connection conn) {
@@ -59,18 +57,19 @@
 			}
 			//setPeriodFields("sprintdates");
 
+			int datefind = 0;
 			try {
-					ResultSet rsx = st.executeQuery("select count(*) from sprintdates;");
-					rsx.next();
-					if(rsx.getInt(1) == 2) {
-					setPeriodFields("sprintdates");
+				ResultSet rsx = st.executeQuery("select id from sprintdates;");
+				while(rsx.next()){
+						datefind = rsx.getInt("id");
 					}
-					rsx.close();
-					} catch (Exception aa) {
-					aa.printStackTrace();
-					System.out.println("NOT QUIET WHAT WAS EXPECTED");
-				}
-
+			} catch (SQLException aa) {
+				aa.printStackTrace();
+				System.out.println("NOT QUIET WHAT WAS EXPECTED");
+			}
+			if(datefind==1){
+			setPeriodFields("sprintdates");
+			}
 			setLayout(new FlowLayout(FlowLayout.LEFT, HORIZONTAL_GAP, VERTICAL_GAP));
 			BorderLayout bl = new BorderLayout();
 			bl.setHgap(30);
@@ -86,7 +85,7 @@
 			periodPan.add(begin_tf);
 			periodPan.add(new Label("Дата окончания спринта"));
 			periodPan.add(end_tf);
-			JButton ok_bt = new JButton("OK");
+			JButton ok_bt = new JButton("Внести");
 			periodPan.add(ok_bt);
 
 			ok_bt.addActionListener(new ActionListener() {
@@ -99,20 +98,35 @@
 									java.util.Date d1 =  new SimpleDateFormat("yyyy-MM-dd").parse(begin_tf.getText());
 									java.util.Date d2 =  new SimpleDateFormat("yyyy-MM-dd").parse(end_tf.getText());
 									if(d2.after(d1) && d1.before(d2)){
-										try{
-											st.executeUpdate("UPDATE sprintdates SET begindate = to_date('"+ begin_tf.getText() +"','yyyy-mm-dd'), enddate = to_date('"+ end_tf.getText() +"','yyyy-mm-dd');");
-											JOptionPane.showMessageDialog(null, "Добавлены", "Уведомленька", JOptionPane.ERROR_MESSAGE);
-										}catch(SQLException fieldExc){
+										int datefind = 0;
+										try {
+											ResultSet rsx = st.executeQuery("select id from sprintdates;");
+											while(rsx.next()){
+													datefind = rsx.getInt("id");
+												}
+										} catch (SQLException cc) {
+											cc.printStackTrace();
+											System.out.println("NOT QUIET WHAT WAS EXPECTED");
+										}
+										if(datefind==1){
 											try{
-												System.out.println("dates of sprint not updated");
-												st.executeQuery("insert into sprintdates (begindate, enddate)  values ('"+ begin_tf.getText()+"','"+ end_tf.getText() +"');");
-												JOptionPane.showMessageDialog(null, "Добавлены потом ", "Уведомленька", JOptionPane.ERROR_MESSAGE);
-											}catch(SQLException fieldinsertExc){
-												System.out.println("dates of sprint not inserted");
-												fieldinsertExc.printStackTrace();
+												st.executeUpdate("UPDATE sprintdates SET begindate ='"+ begin_tf.getText() +"', enddate ='"+ end_tf.getText() +"';");
+												JOptionPane.showMessageDialog(null, "Добавлены", "Уведомленька", JOptionPane.ERROR_MESSAGE);
+											}catch (SQLException aa) {
+												aa.printStackTrace();
+												System.out.println("не обновилось");
 											}
-										fieldExc.printStackTrace();
-									}
+										}
+										if(datefind==0){
+											try{
+													st.executeUpdate("INSERT INTO sprintdates (begindate, enddate) VALUES ('"+ begin_tf.getText()+"','"+ end_tf.getText() +"');");
+													JOptionPane.showMessageDialog(null, "Добавлены потом ", "Уведомленька", JOptionPane.ERROR_MESSAGE);
+												}catch (SQLException bb) {
+													bb.printStackTrace();
+													System.out.println("не добавилось");
+												}
+										}
+
 								}else{
 									JOptionPane.showMessageDialog(null, "Дата начала должна быть меньше даты окончания", "Ошибочка((", JOptionPane.ERROR_MESSAGE);
 								}
@@ -143,6 +157,8 @@
 			tasks_tb.getModel().addTableModelListener(new TableModelListener() {
 
       	public void tableChanged(TableModelEvent e) {
+
+					if (e.getType()!=TableModelEvent.INSERT && e.getType()!=TableModelEvent.DELETE) {
 					int row = e.getFirstRow();
 					int column = e.getColumn();
 					TableModel model = (TableModel)e.getSource();
@@ -165,10 +181,15 @@
 						System.out.println("updExc !!!!!!!!!!!!!");
 						updExc.printStackTrace();
 					}
+				}else{
+					int row = e.getFirstRow();
+						System.out.println("rowww= "+row);
 
+				}
 
 				}
     	});
+			//tasks_tb.addRow(new Vector<Object>);
 			JScrollPane tasks_scrtb = new JScrollPane(tasks_tb);
 			tasks_tb.setFillsViewportHeight(true);
 			tasks_scrtb.setSize(new Dimension(TASKS_WIDTH, TASKS_HEIGTH));
@@ -245,6 +266,15 @@
 						});
 
 
+				delete_task.addActionListener(new ActionListener() {
+
+								public void actionPerformed(ActionEvent e) {
+									//tasks_tb.getModel().delRow(tasks_tb.getSelectionModel().getLeadSelectionIndex());
+
+								}
+
+							});
+
 				showDiag_bttn.addActionListener(new ActionListener() {
 
 								public void actionPerformed(ActionEvent e) {
@@ -297,18 +327,11 @@
 
 		public static void setPeriodFields(String nametable){
 			try{
-				ResultSet rs = st.executeQuery("select * from " + nametable);
-				java.util.Date date1 = null;
-				java.util.Date date2 = null;
-				rs.next();
-				Timestamp timestamp1 = rs.getTimestamp("begindate");
-				Timestamp timestamp2 = rs.getTimestamp("enddate");
-				if (timestamp1 != null && timestamp2 != null)
-    			date1 = new java.util.Date(timestamp1.getTime());
-					date2 = new java.util.Date(timestamp2.getTime());
-
- 					begin_tf.setText(new SimpleDateFormat("yyyy-MM-dd").format(date1));
-					end_tf.setText(new SimpleDateFormat("yyyy-MM-dd").format(date2));
+					ResultSet rs = st.executeQuery("select * from " + nametable + " where id = 1;");
+					while(rs.next()){
+						begin_tf.setText(rs.getString("begindate"));
+						end_tf.setText(rs.getString("enddate"));
+					}
 
 			}catch(SQLException rsmdExc){
 				System.out.println("setfields not success");
@@ -322,48 +345,9 @@
 	         return m.matches();
 	 }
 
-	 private void addRow(Object[] obj, DefaultTableModel customModel) {
-		 customModel.addRow(obj);
+	 private void addRow(Vector<Object> vo, MyTableModel customModel) {
+		 customModel.addRow(vo);
 	 }
-
-
-		class RemoveEntry extends JDialog {
-
-			private JTextField title_tf = new JTextField(10);
-			private JButton remFromDBBttn = new JButton("Remove Entry");
-
-			public RemoveEntry (JFrame frame, String title) {
-
-				super(frame, title, true);
-
-				JPanel container = new JPanel(new GridLayout(3, 1));
-
-				container.add(new Label("Remove Entry"));
-				container.add(title_tf);
-				container.add(remFromDBBttn);
-				add(container);
-				pack();
-				setLocationRelativeTo(frame);
-
-				remFromDBBttn.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
-						try {
-
-							Statement statement = conn.createStatement();
-							statement.executeUpdate("delete from tasks where id = " + title_tf.getText() + ";");
-							title_tf.setText("");
-							statement.close();
-						} catch (Exception sqlExc) {
-							System.out.println("Would you like a cup of fucking exceptions, fag?");
-							sqlExc.printStackTrace();
-						}
-						setVisible(false);
-					}
-
-				});
-			}
-
-		}
 
 
 		class AddValues extends JDialog {
@@ -445,7 +429,7 @@
 								task_row.add(Integer.parseInt(labor_vol_tf.getText()));
 								task_row.add("Запланировано");
 								}
-							//tasks_tb.addRow(task_row);
+							addRow(task_row,(MyTableModel)tasks_tb.getModel());
 							task_row.clear();
 							labor_vol_tf.setText("");
 							isDone = false;
@@ -511,17 +495,13 @@
 		}
 
 		public void addRow(Vector<Object> vo) {
-
 				data.add(vo);
-				this.fireTableDataChanged();
-
+				this.fireTableRowsInserted(data.size(), data.size());
 		}
 
 		public void delRow(int row) {
-
 		data.remove(row);
 		this.fireTableDataChanged();
-
 		}
 
     public int getColumnCount() {

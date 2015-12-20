@@ -14,10 +14,10 @@
 				public void run() {
 
 					ConnectionDial connD = new ConnectionDial();
-					connD.setSize(500,200);
 					connD.setVisible(true);
 					connD.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 					connD.setLocationRelativeTo(null);
+					connD.setSize(315,255);
 					//
 					// MainWindow mw = new MainWindow("Burndown app");
 					//
