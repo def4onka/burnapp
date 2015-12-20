@@ -27,10 +27,6 @@
 
 		protected Connection conn = null;
 		protected static Statement st = null;
-		//protected static ResultSetMetaData tasks_rsmd = null;
-		//protected static ResultSetMetaData workdays_rsmd = null;
-		//protected static ResultSet tasks_rs = null;
-		//protected static ResultSet workdays_rs = null;
 
 		JButton change_task = new JButton("Изменить");
 		JButton delete_task = new JButton("Удалить");
@@ -41,8 +37,8 @@
 		JButton showDiag_bttn = new JButton("Показать диграмму");
 		static JTextField begin_tf = new JTextField(10);
 		static JTextField end_tf = new JTextField(10);
-		private DefaultTableModel tasksModel;
-		private DefaultTableModel workdaysModel;
+		public JTable tasks_tb;
+		protected JTable workdays_tb;
 
 		private AddValues av = new AddValues(this, "Новая задача");
 		private AddValuesWD avwd = new AddValuesWD(this, "Новый рабочий день");
@@ -140,9 +136,10 @@
 			MyTableModel mtb = new MyTableModel();
 			//mtb.setColumnNames("Задача,Описание,Трудоемкость,Статус,Дата выполнения");
 			mtb.setData("tasks");
-			JTable tasks_tb = new JTable(mtb);
+			tasks_tb = new JTable(mtb);
 			tasks_tb.setSize(new Dimension(TASKS_WIDTH, TASKS_HEIGTH));
 			tasks_tb.setPreferredSize(new Dimension(TASKS_WIDTH, TASKS_HEIGTH));
+			tasks_tb.getSelectionModel().addListSelectionListener(new RowListener());
 			tasks_tb.getModel().addTableModelListener(new TableModelListener() {
 
       	public void tableChanged(TableModelEvent e) {
@@ -187,7 +184,7 @@
 			MyTableModel mtbwd = new MyTableModel();
 			//mtbwd.setColumnNames("День,Трудоемкость");
 			mtbwd.setData("workdays");
-			JTable workdays_tb = new JTable(mtbwd);
+			workdays_tb = new JTable(mtbwd);
 			workdays_tb.setSize(new Dimension(WORKDAYS_WIDTH, WORKDAYS_HEIGTH));
 			workdays_tb.setPreferredSize(new Dimension(WORKDAYS_WIDTH, WORKDAYS_HEIGTH));
 			JScrollPane workdays_scrtb = new JScrollPane(workdays_tb);
@@ -284,39 +281,18 @@
 
 		}
 
-		public static DefaultTableModel buildTableModel(String nametable) {
-	    // names of columns
-			Vector<String> columnNames = new Vector<String>();
-			Vector<Vector<Object>> data = new Vector<Vector<Object>>();
-			try{
-				ResultSet rs = st.executeQuery("select * from " + nametable);
-				ResultSetMetaData	 rsmd = rs.getMetaData();
-				try{
-			    int columnCount = rsmd.getColumnCount();
-			    for (int column = 1; column <= columnCount; column++) {
-			        columnNames.add(rsmd.getColumnName(column));
-			    }
-
-			    // data of the table
-
-			    while (rs.next()) {
-			        Vector<Object> vector = new Vector<Object>();
-			        for (int columnIndex = 1; columnIndex <= columnCount; columnIndex++) {
-			            vector.add(rs.getObject(columnIndex));
-			        }
-			        data.add(vector);
-			    }
-				}catch(SQLException e){
-					System.out.println("tasks table not filled cause sqlexc");
-					e.printStackTrace();
-				}
-			}catch(SQLException rsmdExc){
-				System.out.println("resulsetmeta not created");
-				rsmdExc.printStackTrace();
+		private class RowListener implements ListSelectionListener {
+			public void valueChanged(ListSelectionEvent event) {
+				if (event.getValueIsAdjusting()) {
+			return;
 			}
 
-	    return new DefaultTableModel(data, columnNames);
+			int rowSelected = tasks_tb.getSelectionModel().getLeadSelectionIndex();
+			if(rowSelected!=-1) {
+			System.out.println("Row selected: "+tasks_tb.getSelectionModel().getLeadSelectionIndex());
+			}
 
+			}
 		}
 
 		public static void setPeriodFields(String nametable){
@@ -450,19 +426,27 @@
 
 				sendToDbBttn.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
-						//Object[] task_row = null;
+						Vector<Object> task_row = new Vector<Object>();
 						try{
 							Statement statement = conn.createStatement();
 							if(isDone){
 								statement.executeUpdate("insert into tasks (title, note, labor_vol, status, readyday) values (" +
 												"'" + title_tf.getText() + "', '"+ note_tf.getText() +"'," + Integer.parseInt(labor_vol_tf.getText()) +",'Выполнено', to_date('" + date_tf.getText() + "', 'yyyy-mm-dd'));");
-							//task_row = new Object[]{title_tf.getText(),note_tf.getText()+"",Integer.parseInt(labor_vol_tf.getText()), "Выполнено", date_tf.getText()};
+							task_row.add(title_tf.getText());
+							task_row.add(note_tf.getText());
+							task_row.add(Integer.parseInt(labor_vol_tf.getText()));
+							task_row.add("Выполнено");
+							task_row.add(date_tf.getText());
 							}else{
 							statement.executeUpdate("insert into tasks (title, note, labor_vol,status) values (" +
 								"'" + title_tf.getText() + "', '"+ note_tf.getText() +"'," + Integer.parseInt(labor_vol_tf.getText()) +", "+ "'Запланировано'" +");");//to_date('" + date_tf.getText() + "', 'mm/dd/yyyy'));");
-								//task_row = new Object[]{title_tf.getText(),note_tf.getText()+"",Integer.parseInt(labor_vol_tf.getText()), "Запланировано"};
-							}
-							//addRow(task_row,tasksModel);
+								task_row.add(title_tf.getText());
+								task_row.add(note_tf.getText());
+								task_row.add(Integer.parseInt(labor_vol_tf.getText()));
+								task_row.add("Запланировано");
+								}
+							//tasks_tb.addRow(task_row);
+							task_row.clear();
 							labor_vol_tf.setText("");
 							isDone = false;
 							done_cb.setSelected(false);
@@ -526,6 +510,19 @@
 			}
 		}
 
+		public void addRow(Vector<Object> vo) {
+
+				data.add(vo);
+				this.fireTableDataChanged();
+
+		}
+
+		public void delRow(int row) {
+
+		data.remove(row);
+		this.fireTableDataChanged();
+
+		}
 
     public int getColumnCount() {
       return columnNames.size();
