@@ -7,7 +7,7 @@ import java.sql.*;
 
 class ConnectionDial extends JFrame{
   private static final long serialVersionUID = 1L;
-  
+
   private String login;
   private String pass;
   private String address;
@@ -23,28 +23,10 @@ class ConnectionDial extends JFrame{
   private JButton accept = new JButton("Подключиться к БД");
 
   private Connection conn = null;
-
+ @SuppressWarnings({ "deprecation"})
   public ConnectionDial(){
 
     super("Подключение");
-/*
-    JPanel stuffPan = new JPanel(new GridLayout(6, 2));
-
-    stuffPan.add(new Label("Login: "));
-    stuffPan.add(login_tf);
-    stuffPan.add(new Label("Password: "));
-    stuffPan.add(pass_tf);
-    stuffPan.add(new Label("Address: "));
-    stuffPan.add(address_tf);
-    address_tf.setText("localhost");
-    stuffPan.add(new Label("Port: "));
-    port_tf.setText("5432");
-    stuffPan.add(port_tf);
-    stuffPan.add(new Label("Database: "));
-    stuffPan.add(dbname_tf);
-    stuffPan.add(accept);
-    add(stuffPan);
-*/
     login_tf.setText("def11");
     pass_tf.setText("wordpass");
     address_tf.setText("localhost");

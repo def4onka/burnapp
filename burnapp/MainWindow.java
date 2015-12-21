@@ -424,6 +424,7 @@
 	 }
 
 	 class AddDate extends JDialog{
+		private static final long serialVersionUID = 4L;
 
 	 private JButton sendToDbBttn = new JButton("Добавить");
 	 private JTextField date_tf = new JTextField(10);
@@ -777,6 +778,7 @@
 
 
 		class AddValuesWD extends JDialog {
+			private static final long serialVersionUID = 5L;
 
 			private JTextField labor_vol_tf = new JTextField(10);
 			private JTextField date_tf = new JTextField(10);
