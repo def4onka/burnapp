@@ -14,7 +14,7 @@
 	import javax.swing.event.*;
 
 	public class MainWindow extends JFrame {
-
+	  private static final long serialVersionUID = 3L;
 
 		private static final int VERTICAL_GAP = 10;
 		private static final int HORIZONTAL_GAP = 30;
@@ -275,20 +275,20 @@
 
 							});
 
-				showDiag_bttn.addActionListener(new ActionListener() {
+			showDiag_bttn.addActionListener(new ActionListener() {
 
-								public void actionPerformed(ActionEvent e) {
+							public void actionPerformed(ActionEvent e) {
 
-									JavaPaintUI exampleChart = new JavaPaintUI(conn/*,begin_tf.getText(),end_tf.getText()*/);
-									Chart chart = exampleChart.getChart();
-									JFrame frame = new JFrame("Диаграмма");
-									JPanel chartPanel = new XChartPanel(chart);
-									frame.add(chartPanel);
-									frame.pack();
-									frame.setVisible(true);
-															}
+								JavaPaintUI exampleChart = new JavaPaintUI(conn/*,begin_tf.getText(),end_tf.getText()*/);
+								Chart chart = exampleChart.getChart();
+								JFrame frame = new JFrame("Диаграмма");
+								JPanel chartPanel = new XChartPanel(chart);
+								frame.add(chartPanel);
+								frame.pack();
+								frame.setVisible(true);
+														}
 
-							});
+						});
 
 
 			add(panel);
@@ -345,13 +345,25 @@
 	         return m.matches();
 	 }
 
-	 private void addRow(Vector<Object> vo, MyTableModel customModel) {
-		 customModel.addRow(vo);
+	 private void addRowInMain(Object[] obj, MyTableModel customModel) {
+		 new Thread(new Runnable() {
+		 private int value = 0;
+		 @Override
+		 public void run() {
+					 customModel.safeAddRow(obj);
+
+					 try {
+							Thread.sleep(200);
+					 } catch (InterruptedException e) {}
+		 }
+		}).start();
+
+
 	 }
 
 
 		class AddValues extends JDialog {
-
+			private static final long serialVersionUID = 2L;
 			private JTextField title_tf = new JTextField(10);
 			private JTextField note_tf = new JTextField(10);
 			private JTextField labor_vol_tf = new JTextField(10);
@@ -386,6 +398,7 @@
 
 						@Override
 						public void itemStateChanged(ItemEvent e) {
+
 							if(e.getStateChange() == ItemEvent.SELECTED) {
 								isDone = true;
 								date_lbl.setVisible(true);
@@ -428,8 +441,12 @@
 								task_row.add(note_tf.getText());
 								task_row.add(Integer.parseInt(labor_vol_tf.getText()));
 								task_row.add("Запланировано");
+								task_row.add("");
+									System.out.println("vo[0] "+task_row.get(0)+"vo[1] "+task_row.get(1)+"vo[2] "+task_row.get(2));
 								}
-							addRow(task_row,(MyTableModel)tasks_tb.getModel());
+							//addRowInMain(task_row,(MyTableModel)tasks_tb.getModel());
+							Object[] tmp = task_row.toArray();
+							addRowInMain(tmp,(MyTableModel)tasks_tb.getModel());
 							task_row.clear();
 							labor_vol_tf.setText("");
 							isDone = false;
@@ -455,7 +472,7 @@
 		}
 
 		class MyTableModel extends AbstractTableModel {
-
+		private static final long serialVersionUID = 1L;
     private Vector<String> columnNames = new Vector<String>();
 		private Vector<Vector<Object>> data = new Vector<Vector<Object>>();
 
@@ -494,10 +511,29 @@
 			}
 		}
 
-		public void addRow(Vector<Object> vo) {
-				data.add(vo);
-				this.fireTableRowsInserted(data.size(), data.size());
+		public void safeAddRow(Object[] o) {
+						Vector<Object> vo = new Vector<Object>();
+						for(int i=0; i<o.length;i++)
+							vo.add(o[i]);
+						data.add(vo);
+						System.out.println("data.size()= " + data.size());
+						System.out.println("vo[0] "+vo.get(0)+"vo[1] "+vo.get(1)+"vo[2] "+vo.get(2));
+			if (SwingUtilities.isEventDispatchThread()) {
+				addRow(vo);
+    	} else {
+       SwingUtilities.invokeLater(new Runnable() {
+          public void run() {
+						addRow(vo);
+					}
+       });
+    }
 		}
+
+		public void addRow(Vector<Object> vo) {
+
+			this.fireTableRowsInserted(data.size()-1, data.size()-1);
+		}
+
 
 		public void delRow(int row) {
 		data.remove(row);
