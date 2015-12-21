@@ -29,10 +29,10 @@
 		protected Connection conn = null;
 		protected static Statement st = null;
 
-		JButton change_task = new JButton("Изменить");
+	//	JButton change_task = new JButton("Изменить");
 		JButton delete_task = new JButton("Удалить");
 		JButton addnew_task = new JButton("Добавить");
-		JButton change_workday = new JButton("Изменить");
+		//JButton change_workday = new JButton("Изменить");
 		JButton delete_workday = new JButton("Удалить");
 		JButton addnew_workday = new JButton("Добавить");
 		JButton showDiag_bttn = new JButton("Показать диграмму");
@@ -130,19 +130,19 @@
 
 			JPanel tasks_bttns = new JPanel(new BorderLayout());
 
-			JPanel chdel = new JPanel();
-			chdel.add(change_task);
-			chdel.add(delete_task);
-			tasks_bttns.add(chdel,BorderLayout.CENTER);
+			//JPanel chdel = new JPanel();
+			//chdel.add(change_task);
+			//chdel.add(delete_task);
+			tasks_bttns.add(delete_task,BorderLayout.WEST);
 			tasks_bttns.add(addnew_task,BorderLayout.EAST);
 
 			JPanel workdays_bttns = new JPanel(new BorderLayout());
 
 
-			JPanel chdelwd = new JPanel();
-			chdelwd.add(change_workday);
-			chdelwd.add(delete_workday);
-			workdays_bttns.add(chdelwd,BorderLayout.CENTER);
+			//JPanel chdelwd = new JPanel();
+			//chdelwd.add(change_workday);
+			//chdelwd.add(delete_workday);
+			workdays_bttns.add(delete_workday,BorderLayout.WEST);
 			workdays_bttns.add(addnew_workday,BorderLayout.EAST);
 
 			JPanel showDiagPan = new JPanel();
@@ -175,7 +175,7 @@
 							if(datefind==1){
 								try{
 									st.executeUpdate("UPDATE sprintdates SET begindate ='"+ begin_tf.getText() +"', enddate ='"+ end_tf.getText() +"';");
-									JOptionPane.showMessageDialog(null, "Добавлены", "Уведомленька", JOptionPane.ERROR_MESSAGE);
+									JOptionPane.showMessageDialog(null, "Добавлены", "Уведомленька", JOptionPane.INFORMATION_MESSAGE);
 								}catch (SQLException aa) {
 									aa.printStackTrace();
 									System.out.println("не обновилось");
@@ -184,7 +184,7 @@
 							if(datefind==0){
 								try{
 										st.executeUpdate("INSERT INTO sprintdates (begindate, enddate) VALUES ('"+ begin_tf.getText()+"','"+ end_tf.getText() +"');");
-										JOptionPane.showMessageDialog(null, "Добавлены потом ", "Уведомленька", JOptionPane.ERROR_MESSAGE);
+										JOptionPane.showMessageDialog(null, "Добавлены потом ", "Уведомленька", JOptionPane.INFORMATION_MESSAGE);
 									}catch (SQLException bb) {
 										bb.printStackTrace();
 										System.out.println("не добавилось");
@@ -244,7 +244,7 @@
 				pack();
 				statement.close();
 				}catch(SQLException aaa){
-				JOptionPane.showMessageDialog(null, "Что-то пошло не так", "Уведомленька", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(null, "Что-то пошло не так", "Ошибочка((", JOptionPane.ERROR_MESSAGE);
 				aaa.printStackTrace();
 				}
 				}
