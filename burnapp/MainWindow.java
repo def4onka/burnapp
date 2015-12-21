@@ -22,9 +22,9 @@
 		private static final int VERTICAL_GAP = 10;
 		private static final int HORIZONTAL_GAP = 30;
 		private static final int TASKS_WIDTH = 600;
-		private static final int TASKS_HEIGTH = 300;
+		private static final int TASKS_HEIGTH = 500;
 		private static final int WORKDAYS_WIDTH = 300;
-		private static final int WORKDAYS_HEIGTH = 300;
+		private static final int WORKDAYS_HEIGTH = 500;
 
 		protected Connection conn = null;
 		protected static Statement st = null;
@@ -209,8 +209,8 @@
 				public void tableChanged(TableModelEvent e) {
 
 				if (e.getType()!=TableModelEvent.INSERT && e.getType()!=TableModelEvent.DELETE) {
-				int row = e.getFirstRow();
-				int column = e.getColumn();
+					int row = e.getFirstRow();
+					int column = e.getColumn();
 				TableModel model = (TableModel)e.getSource();
 				String columnName = model.getColumnName(column);
 				Object data = model.getValueAt(row, column);
@@ -331,14 +331,24 @@
 						});
 
 
-				delete_task.addActionListener(new ActionListener() {
+			delete_task.addActionListener(new ActionListener() {
 
-								public void actionPerformed(ActionEvent e) {
-									delRowInMain((MyTableModel)tasks_tb.getModel());
+							public void actionPerformed(ActionEvent e) {
+								delRowInMain((MyTableModel)tasks_tb.getModel(),"tasks", tasks_tb);
 
-								}
+							}
 
-							});
+						});
+
+
+			delete_workday.addActionListener(new ActionListener() {
+
+							public void actionPerformed(ActionEvent e) {
+								delRowInMain((MyTableModel)workdays_tb.getModel(),"workdays",workdays_tb);
+
+							}
+
+						});
 
 			showDiag_bttn.addActionListener(new ActionListener() {
 
@@ -375,10 +385,10 @@
 
 		}
 
-		public void deleteQuery(String title){
+		public void deleteQuery(String title,String nametable,String colname){
 			try{
 				System.out.println("title= "+title);
-			st.executeUpdate("delete from tasks where title='"+ title +"';");
+			st.executeUpdate("delete from "+nametable+" where "+ colname +" ='"+ title +"';");
 		}catch(SQLException e){
 			System.out.println("Deleting failed");
 			e.printStackTrace();
@@ -409,8 +419,8 @@
 					 customModel.safeAddRow(obj);
 	 }
 
-	 private void delRowInMain(MyTableModel customModel) {
-					 customModel.safeDelRow(tasks_tb.getSelectionModel().getLeadSelectionIndex());
+	 private void delRowInMain(MyTableModel customModel,String nametable, JTable table) {
+					 customModel.safeDelRow(table.getSelectionModel().getLeadSelectionIndex(),nametable,table);
 	 }
 
 	 class AddDate extends JDialog{
@@ -708,20 +718,23 @@
 			this.fireTableRowsInserted(data.size()-1, data.size()-1);
 		}
 
-		public void safeDelRow(int row) {
+		public void safeDelRow(int row,String nametable,JTable jt) {
 			if (SwingUtilities.isEventDispatchThread()) {
-				delRow(row);
+				delRow(row,nametable,jt);
 			} else {
 			 SwingUtilities.invokeLater(new Runnable() {
 					public void run() {
-						delRow(row);
+						delRow(row,nametable,jt);
 					}
 			 });
 			}
 		}
 
-		public void delRow(int row) {
-			deleteQuery((String)tasks_tb.getValueAt(row,0));
+		public void delRow(int row,String nametable,JTable jt) {
+			if(nametable.equals("tasks"))
+				deleteQuery((String)jt.getValueAt(row,0),nametable,"title");
+			else
+				deleteQuery(new SimpleDateFormat("yyyy-MM-dd").format(jt.getValueAt(row,0)),nametable,"workday");
 			data.remove(row);
 			this.fireTableRowsDeleted(row,row);
 		}
