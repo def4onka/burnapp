@@ -7,7 +7,7 @@ import java.sql.*;
 
 class ConnectionDial extends JFrame{
   private static final long serialVersionUID = 1L;
-
+  
   private String login;
   private String pass;
   private String address;
@@ -52,62 +52,61 @@ class ConnectionDial extends JFrame{
     dbname_tf.setText("burn");
 
     JPanel stuffPan = new JPanel(new GridBagLayout());
-    GridBagConstraints c = new GridBagConstraints();
-    if (shouldFill) {
-                c.fill = GridBagConstraints.HORIZONTAL;
-    }
-    if (shouldWeightX) {
-                   c.weightx = 1.0;
-    }
-    c.insets = new Insets(0, 15, 0, 15);
-    c.fill = GridBagConstraints.HORIZONTAL;
-    c.ipady = 12;
-    //c.weighty = 0.5;
-    c.gridx = 0;
-    c.gridy = 0;
-    stuffPan.add(new Label("Login: "), c);
-    c.ipady = 12;
-    c.gridx = 1;
-    c.gridy = 0;
-    stuffPan.add(login_tf, c);
+GridBagConstraints c = new GridBagConstraints();
+if (shouldFill) {
+c.fill = GridBagConstraints.HORIZONTAL;
+}
+if (shouldWeightX) {
+c.weightx = 1.0;
+}
+c.insets = new Insets(5, 10, 0, 10);
+c.fill = GridBagConstraints.HORIZONTAL;
+c.ipady = 12;
+c.gridx = 0;
+c.gridy = 0;
+stuffPan.add(new Label("Login: "), c);
+c.insets = new Insets(0, 0, 0, 10);
+c.gridx = 1;
+stuffPan.add(login_tf, c);
 
-    //c.weighty = 5.0;
-    c.gridx = 0;
-    c.gridy = 1;
-    stuffPan.add(new Label("Password: "), c);
-    c.gridx = 1;
-    c.gridy = 1;
-    stuffPan.add(pass_tf, c);
+c.insets = new Insets(0, 10, 0, 0);
+c.gridx = 0;
+c.gridy = 1;
+stuffPan.add(new Label("Password: "), c);
+c.insets = new Insets(0, 0, 0, 10);
+c.gridx = 1;
+stuffPan.add(pass_tf, c);
 
-    //c.weighty = 0.5;
-    c.gridx = 0;
-    c.gridy = 2;
-    stuffPan.add(new Label("Address: "), c);
-    c.gridx = 1;
-    c.gridy = 2;
-    stuffPan.add(address_tf, c);
+c.insets = new Insets(0, 10, 0, 0);
+c.gridx = 0;
+c.gridy = 2;
+stuffPan.add(new Label("Address: "), c);
+c.insets = new Insets(0, 0, 0, 10);
+c.gridx = 1;
+stuffPan.add(address_tf, c);
 
-    //c.weighty = 0.5;
-    c.gridx = 0;
-    c.gridy = 3;
-    stuffPan.add(new Label("Port: "), c);
-    c.gridx = 1;
-    c.gridy = 3;
-    stuffPan.add(port_tf, c);
+c.insets = new Insets(0, 10, 0, 0);
+c.gridx = 0;
+c.gridy = 3;
+stuffPan.add(new Label("Port: "), c);
+c.insets = new Insets(0, 0, 0, 10);
+c.gridx = 1;
+stuffPan.add(port_tf, c);
 
-    //c.weighty = 0.5;
-    c.gridx = 0;
-    c.gridy = 4;
-    stuffPan.add(new Label("Database: "), c);
-    c.gridx = 1;
-    c.gridy = 4;
-    stuffPan.add(dbname_tf, c);
+c.insets = new Insets(0, 10, 0, 0);
+c.gridx = 0;
+c.gridy = 4;
+stuffPan.add(new Label("Database: "), c);
+c.insets = new Insets(0, 0, 0, 10);
+c.gridx = 1;
+stuffPan.add(dbname_tf, c);
 
-    c.gridwidth = 2;
-    c.gridx = 0;
-    c.gridy = 5;
-    stuffPan.add(accept, c);
-    add(stuffPan);
+c.insets = new Insets(5, 10, 5, 10);
+c.gridwidth = 2;
+c.gridx = 0;
+c.gridy = 5;
+stuffPan.add(accept, c);
+add(stuffPan);
 
     accept.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
@@ -121,8 +120,6 @@ class ConnectionDial extends JFrame{
         port_tf.setText("5432");
         setDBName(dbname_tf.getText());
         dbname_tf.setText("");
-        //dbc.connect();
-        //dispose();
 
         try {
           Class.forName("org.postgresql.Driver");

@@ -17,7 +17,7 @@
 					connD.setVisible(true);
 					connD.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 					connD.setLocationRelativeTo(null);
-					connD.setSize(315,255);
+					connD.setSize(300,260);
 					//
 					// MainWindow mw = new MainWindow("Burndown app");
 					//

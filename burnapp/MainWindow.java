@@ -16,6 +16,9 @@
 	public class MainWindow extends JFrame {
 	  private static final long serialVersionUID = 3L;
 
+		final static boolean shouldFill = true;
+		final static boolean shouldWeightX = true;
+
 		private static final int VERTICAL_GAP = 10;
 		private static final int HORIZONTAL_GAP = 30;
 		private static final int TASKS_WIDTH = 600;
@@ -40,7 +43,9 @@
 
 		private AddValues av = new AddValues(this, "Новая задача");
 		private AddValuesWD avwd = new AddValuesWD(this, "Новый рабочий день");
-
+		private AddDate aad = new AddDate(this, "Введите дату");
+		private static String titleRow = "";
+		private static int rowNum = 0;
 
 
 		public MainWindow(String title, Connection conn) {
@@ -96,55 +101,6 @@
 			tasks_tb = new JTable(mtb);
 			tasks_tb.setSize(new Dimension(TASKS_WIDTH, TASKS_HEIGTH));
 			tasks_tb.setPreferredSize(new Dimension(TASKS_WIDTH, TASKS_HEIGTH));
-			tasks_tb.getSelectionModel().addListSelectionListener(new RowListener());
-			tasks_tb.getModel().addTableModelListener(new TableModelListener() {
-
-      	public void tableChanged(TableModelEvent e) {
-										int row = e.getFirstRow();
-					if (e.getType()!=TableModelEvent.INSERT && e.getType()!=TableModelEvent.DELETE) {
-
-					int column = e.getColumn();
-					TableModel model = (TableModel)e.getSource();
-					String columnName = model.getColumnName(column);
-					Object data = model.getValueAt(row, column);
-
-				// Do something with the data...
-					System.out.println("data="+data+" row = "+ row+ " col= "+ column
-					+"colname= "+columnName+"title= "+ tasks_tb.getValueAt(row,0));
-
-					try{
-						if(column == 2)
-							st.executeUpdate("update tasks set "+ columnName +"= " + data
-							+ "where title = '" + tasks_tb.getValueAt(row,0)+"' ;");
-							else{
-								if(column==3){
-									if(data.equals("Выполнено")){
-										//тут окно с вводом даты и в конструктор строка с содержимым title
-										//tasks_tb.getValueAt(row,0)
-									}else{
-										if(data.equals("Запланировано")){
-											st.executeUpdate("update tasks set "+ columnName +"= '" + data
-											+ "' where title = '" + tasks_tb.getValueAt(row,0)+"' ;");
-										}
-										else{
-											//тут окно с ошибкой типа не вып не зап
-										}
-									}
-
-								}
-							st.executeUpdate("update tasks set "+ columnName +"= '" + data
-							+ "' where title = '" + tasks_tb.getValueAt(row,0)+"' ;");
-						}
-					}catch(SQLException updExc){
-						System.out.println("updExc !!!!!!!!!!!!!");
-						updExc.printStackTrace();
-					}
-				}else{
-
-						System.out.println("rowww= "+row);
-				}
-			}
-    	});
 			JScrollPane tasks_scrtb = new JScrollPane(tasks_tb);
 			tasks_tb.setFillsViewportHeight(true);
 			tasks_scrtb.setSize(new Dimension(TASKS_WIDTH, TASKS_HEIGTH));
@@ -247,6 +203,110 @@
 
 			}
 			});
+			tasks_tb.getSelectionModel().addListSelectionListener(new RowListener());
+			tasks_tb.getModel().addTableModelListener(new TableModelListener() {
+
+				public void tableChanged(TableModelEvent e) {
+
+				if (e.getType()!=TableModelEvent.INSERT && e.getType()!=TableModelEvent.DELETE) {
+				int row = e.getFirstRow();
+				int column = e.getColumn();
+				TableModel model = (TableModel)e.getSource();
+				String columnName = model.getColumnName(column);
+				Object data = model.getValueAt(row, column);
+
+				// Do something with the data...
+				System.out.println("data="+data+" row = "+ row+ " col= "+ column
+				+"colname= "+columnName+"title= "+ tasks_tb.getValueAt(row,0));
+
+				try{
+				if(column == 2)
+				st.executeUpdate("update tasks set "+ columnName +"= " + data
+				+ "where title = '" + tasks_tb.getValueAt(row,0)+"' ;");
+				else{
+				if(column==3){
+				if(data.equals("Выполнено")){
+
+				if(!aad.isVisible()) {
+				setRow((String) tasks_tb.getValueAt(row,0));
+				setRowNum(row);
+				aad.setVisible(true);
+				}
+				}else{
+
+				if(data.equals("Запланировано")){
+				try{
+				Statement statement = conn.createStatement();
+				statement.executeUpdate("update tasks set "+ columnName +"= '" + data
+				+ "' , readyday = null where title = '" + tasks_tb.getValueAt(row,0)+"' ;");
+
+				tasks_tb.getModel().setValueAt((Object) "",row,4);
+				pack();
+				statement.close();
+				}catch(SQLException aaa){
+				JOptionPane.showMessageDialog(null, "Что-то пошло не так", "Уведомленька", JOptionPane.ERROR_MESSAGE);
+				aaa.printStackTrace();
+				}
+				}
+				else{
+				JOptionPane.showMessageDialog(null, "Проверьте вводимые данные", "Уведомленька", JOptionPane.ERROR_MESSAGE);
+				//тут окно с ошибкой типа не вып не зап
+				}
+
+				}
+
+				}
+				/*
+				st.executeUpdate("update tasks set "+ columnName +"= '" + data
+				+ "' where title = '" + tasks_tb.getValueAt(row,0)+"' ;");
+				*/
+				}
+				}catch(SQLException updExc){
+				System.out.println("updExc !!!!!!!!!!!!!");
+				updExc.printStackTrace();
+				}
+				}else{
+				int row = e.getFirstRow();
+				System.out.println("rowww= "+row);
+
+				}
+				}
+    	});
+
+			workdays_tb.getSelectionModel().addListSelectionListener(new RowListener());
+			workdays_tb.getModel().addTableModelListener(new TableModelListener() {
+
+      	public void tableChanged(TableModelEvent e) {
+										int row = e.getFirstRow();
+					if (e.getType()!=TableModelEvent.INSERT && e.getType()!=TableModelEvent.DELETE) {
+
+					int column = e.getColumn();
+					TableModel model = (TableModel)e.getSource();
+					String columnName = model.getColumnName(column);
+					Object data = model.getValueAt(row, column);
+
+				// Do something with the data...
+					System.out.println("data="+data+" row = "+ row+ " col= "+ column
+					+"colname= "+columnName+"title= "+ tasks_tb.getValueAt(row,0));
+
+					try{
+						if(column==1)
+							st.executeUpdate("update workdays set "+ columnName +"= '" + data
+							+ "' where workday = to_date('" + workdays_tb.getValueAt(row,0)+"','yyyy-MM-dd') ;");
+							else
+							st.executeUpdate("update workdays set "+ columnName +"= " + data
+							+ " where workday = '" + (String)workdays_tb.getValueAt(row,0)+"' ;");
+					}catch(SQLException updExc){
+						System.out.println("updExc !!!!!!!!!!!!!");
+						updExc.printStackTrace();
+					}
+				}else{
+
+						System.out.println("rowww= "+row);
+				}
+			}
+    	});
+
 
 			addnew_task.addActionListener(new ActionListener() {
 
@@ -353,7 +413,72 @@
 					 customModel.safeDelRow(tasks_tb.getSelectionModel().getLeadSelectionIndex());
 	 }
 
+	 class AddDate extends JDialog{
 
+	 private JButton sendToDbBttn = new JButton("Добавить");
+	 private JTextField date_tf = new JTextField(10);
+
+	 public AddDate(JFrame frame, String title){
+	 super(frame,title,true);
+	 JPanel stuffPan = new JPanel(new GridBagLayout());
+	 GridBagConstraints c = new GridBagConstraints();
+	 if (shouldFill) {
+	 c.fill = GridBagConstraints.HORIZONTAL;
+	 }
+	 if (shouldWeightX) {
+	 c.weightx = 1.0;
+	 }
+	 c.fill = GridBagConstraints.HORIZONTAL;
+	 c.insets = new Insets(5, 10, 5, 10);
+	 c.ipady = 12;
+	 c.gridwidth = 2;
+	 c.gridx = 0;
+	 c.gridy = 0;
+	 Label changDay = new Label("Введите дату выполнения");
+	 changDay.setFont(new Font("Colibri", Font.BOLD, 14));
+	 stuffPan.add(changDay, c);
+	 c.gridwidth = 1;
+	 c.insets = new Insets(0, 10, 0, 0);
+	 c.gridx = 0;
+	 c.gridy = 1;
+	 stuffPan.add(new Label("Дата: "), c);
+	 c.insets = new Insets(0, 0, 0, 10);
+	 c.gridx = 1;
+	 stuffPan.add(date_tf, c);
+	 c.insets = new Insets(5, 10, 5, 10);
+	 c.gridwidth = 2;
+	 c.gridx = 0;
+	 c.gridy = 2;
+	 stuffPan.add(sendToDbBttn, c);
+	 add(stuffPan);
+
+	 pack();
+	 setLocationRelativeTo(frame);
+
+	 sendToDbBttn.addActionListener(new ActionListener() {
+	 public void actionPerformed(ActionEvent e) {
+	 Vector<Object> task_row = new Vector<Object>();
+	 if(isDateStr(date_tf.getText())){
+	 try{
+	 Statement statement = conn.createStatement();
+	 statement.executeUpdate("update tasks set status = 'Выполнено',readyday = '" + date_tf.getText() + "' where title = '" + getRow() + "';");
+	 task_row.add(date_tf.getText());
+	 tasks_tb.getModel().setValueAt((Object) date_tf.getText(),getRowNum(),4);
+	 pack();
+	 statement.close();
+	 } catch (Exception r) {
+	 r.printStackTrace();
+	 System.out.println("Oops, here goes some shit again");
+	 }
+	 setVisible(false);
+	 }else{
+	 JOptionPane.showMessageDialog(null, "Неверный формат даты", "Уведомленька", JOptionPane.ERROR_MESSAGE);
+	 }
+	 }
+	 });
+
+	 }
+	 }
 
 		class AddValues extends JDialog {
 			private static final long serialVersionUID = 2L;
@@ -370,46 +495,91 @@
 
 				super(frame, title, true);
 
-				JPanel container = new JPanel(new GridLayout(3, 1));
+				JPanel stuffPan = new JPanel(new GridBagLayout());
 
-				JPanel stuffPanel = new JPanel(new GridLayout(5, 2));
-				stuffPanel.add(new Label("Задача "));
-				stuffPanel.add(title_tf);
-				stuffPanel.add(new Label("Описание задачи "));
-				stuffPanel.add(note_tf);
-				stuffPanel.add(new Label("Трудоемкость:"));
-				stuffPanel.add(labor_vol_tf);
-				stuffPanel.add(done_cb);
-				stuffPanel.add(new Label("Выполнена"));
+				GridBagConstraints c = new GridBagConstraints();
+				if (shouldFill) {
+				c.fill = GridBagConstraints.HORIZONTAL;
+				}
+				if (shouldWeightX) {
+				c.weightx = 1.0;
+				}
+				c.fill = GridBagConstraints.HORIZONTAL;
+				c.insets = new Insets(5, 10, 5, 10);
+
+				c.ipady = 12;
+				c.gridwidth = 2;
+				c.gridx = 0;
+				c.gridy = 0;
+				Label addTasks = new Label("Введите данные добавляемой задачи");
+				addTasks.setFont(new Font("Colibri", Font.BOLD, 14));
+				stuffPan.add(addTasks, c);
+				c.gridwidth = 1;
+				c.insets = new Insets(0, 10, 0, 0);
+				c.gridx = 0;
+				c.gridy = 1;
+				stuffPan.add(new Label("Задача: "), c);
+				c.insets = new Insets(0, 0, 0, 10);
+				c.gridx = 1;
+				stuffPan.add(title_tf, c);
+				c.insets = new Insets(0, 10, 0, 0);
+				c.gridx = 0;
+				c.gridy = 2;
+				stuffPan.add(new Label("Описание задачи: "), c);
+				c.insets = new Insets(0, 0, 0, 10);
+				c.gridx = 1;
+				stuffPan.add(note_tf, c);
+				c.insets = new Insets(0, 10, 0, 0);
+				c.gridx = 0;
+				c.gridy = 3;
+				stuffPan.add(new Label("Трудоемкость: "), c);
+				c.insets = new Insets(0, 0, 0, 10);
+				c.gridx = 1;
+				stuffPan.add(labor_vol_tf, c);
+				c.insets = new Insets(0, 10, 0, 0);
+				c.gridx = 0;
+				c.gridy = 4;
+				stuffPan.add(new Label("Выполнена: "), c);
+				c.insets = new Insets(0, 0, 0, 10);
+				c.gridx = 1;
+				stuffPan.add(done_cb, c);
+				c.insets = new Insets(0, 10, 0, 0);
 				Label date_lbl = new Label("Дата: ");
-				stuffPanel.add(date_lbl);
-				stuffPanel.add(date_tf);
+				c.gridx = 0;
+				c.gridy = 5;
+				stuffPan.add(date_lbl, c);
+				c.insets = new Insets(0, 0, 0, 10);
+				c.gridx = 1;
+				stuffPan.add(date_tf, c);
 				date_lbl.setVisible(false);
 				date_tf.setVisible(false);
 
+				c.insets = new Insets(5, 10, 5, 10);
+				c.gridwidth = 2;
+				c.gridx = 0;
+				c.gridy = 6;
+				stuffPan.add(sendToDbBttn, c);
+				add(stuffPan);
+
 				done_cb.addItemListener(new ItemListener() {
 
-						@Override
-						public void itemStateChanged(ItemEvent e) {
-
-							if(e.getStateChange() == ItemEvent.SELECTED) {
-								isDone = true;
-								date_lbl.setVisible(true);
-								date_tf.setVisible(true);
-								pack();
-							}
-							else{
-								date_lbl.setVisible(false);
-								date_tf.setVisible(false);
-
-							}
-						}
+				@Override
+				public void itemStateChanged(ItemEvent e) {
+				if(e.getStateChange() == ItemEvent.SELECTED) {
+				isDone = true;
+				date_lbl.setVisible(true);
+				date_tf.setVisible(true);
+				pack();
+				}
+				else{
+				isDone = false;
+				date_lbl.setVisible(false);
+				date_tf.setVisible(false);
+				pack();
+				}
+				}
 				});
 
-				container.add(new Label("Введите данные добавляемой задачи"));
-				container.add(stuffPanel);
-				container.add(sendToDbBttn);
-				add(container);
 
 				pack();
 				setLocationRelativeTo(frame);
@@ -437,7 +607,6 @@
 								task_row.add("");
 									System.out.println("vo[0] "+task_row.get(0)+"vo[1] "+task_row.get(1)+"vo[2] "+task_row.get(2));
 								}
-							//addRowInMain(task_row,(MyTableModel)tasks_tb.getModel());
 							Object[] tmp = task_row.toArray();
 							addRowInMain(tmp,(MyTableModel)tasks_tb.getModel());
 							task_row.clear();
@@ -462,7 +631,24 @@
 
 
 			}
+
+
 		}
+		public static String getRow(){
+		return titleRow;
+		}
+
+		public static void setRow(String title){
+		titleRow = title;
+		}
+
+		public static void setRowNum(int a){
+		rowNum = a;
+		}
+		public static int getRowNum(){
+		return rowNum;
+		}
+
 
 		class MyTableModel extends AbstractTableModel {
 		private static final long serialVersionUID = 1L;
@@ -504,7 +690,7 @@
 							vo.add(o[i]);
 					data.add(vo);
 					System.out.println("data.size()= " + data.size());
-					System.out.println("vo[0] "+vo.get(0)+"vo[1] "+vo.get(1)+"vo[2] "+vo.get(2));
+					System.out.println("vo[0] "+vo.get(0)+"vo[1] "+vo.get(1));
 					if (SwingUtilities.isEventDispatchThread()) {
 						addRow(vo);
     			}
@@ -611,7 +797,13 @@
 						try{
 							Statement statement = conn.createStatement();
 							statement.executeUpdate("insert into workdays (workday, labor_vol) values ( '" + date_tf.getText() + "', " + Integer.parseInt(labor_vol_tf.getText()) +");");
-
+							Vector<Object> tmp = new Vector<Object>();
+							tmp.add(date_tf.getText());
+							tmp.add(Integer.parseInt(labor_vol_tf.getText()));
+							System.out.println("vo[0] "+tmp.get(0)+"vo[1] "+tmp.get(1));
+							Object[] dayObj=tmp.toArray();
+							addRowInMain(dayObj,(MyTableModel)workdays_tb.getModel());
+							tmp.clear();
 							labor_vol_tf.setText("");
 							date_tf.setText("");
 							pack();
