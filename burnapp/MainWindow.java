@@ -87,68 +87,11 @@
 			periodPan.add(end_tf);
 			JButton ok_bt = new JButton("Внести");
 			periodPan.add(ok_bt);
-
-			ok_bt.addActionListener(new ActionListener() {
-
-							public void actionPerformed(ActionEvent e) {
-
-								if (isDateStr(begin_tf.getText()) && isDateStr(end_tf.getText())){
-
-									try{
-									java.util.Date d1 =  new SimpleDateFormat("yyyy-MM-dd").parse(begin_tf.getText());
-									java.util.Date d2 =  new SimpleDateFormat("yyyy-MM-dd").parse(end_tf.getText());
-									if(d2.after(d1) && d1.before(d2)){
-										int datefind = 0;
-										try {
-											ResultSet rsx = st.executeQuery("select id from sprintdates;");
-											while(rsx.next()){
-													datefind = rsx.getInt("id");
-												}
-										} catch (SQLException cc) {
-											cc.printStackTrace();
-											System.out.println("NOT QUIET WHAT WAS EXPECTED");
-										}
-										if(datefind==1){
-											try{
-												st.executeUpdate("UPDATE sprintdates SET begindate ='"+ begin_tf.getText() +"', enddate ='"+ end_tf.getText() +"';");
-												JOptionPane.showMessageDialog(null, "Добавлены", "Уведомленька", JOptionPane.ERROR_MESSAGE);
-											}catch (SQLException aa) {
-												aa.printStackTrace();
-												System.out.println("не обновилось");
-											}
-										}
-										if(datefind==0){
-											try{
-													st.executeUpdate("INSERT INTO sprintdates (begindate, enddate) VALUES ('"+ begin_tf.getText()+"','"+ end_tf.getText() +"');");
-													JOptionPane.showMessageDialog(null, "Добавлены потом ", "Уведомленька", JOptionPane.ERROR_MESSAGE);
-												}catch (SQLException bb) {
-													bb.printStackTrace();
-													System.out.println("не добавилось");
-												}
-										}
-
-								}else{
-									JOptionPane.showMessageDialog(null, "Дата начала должна быть меньше даты окончания", "Ошибочка((", JOptionPane.ERROR_MESSAGE);
-								}
-							}catch(Exception parseExc){
-								parseExc.printStackTrace();
-							}
-							}else{
-								JOptionPane.showMessageDialog(null, "Неверный формат даты", "Ошибочка((", JOptionPane.ERROR_MESSAGE);
-							}
-
-						}
-
-						});
-
 			headPan.add(periodPan);
 			panel.add(headPan,BorderLayout.NORTH);
 			JPanel tasksPan = new JPanel(new BorderLayout());
 			tasksPan.setSize(700,500);
-			//tasksModel = buildTableModel("tasks");
-			//JTable tasks_tb = new JTable(tasksModel);
 			MyTableModel mtb = new MyTableModel();
-			//mtb.setColumnNames("Задача,Описание,Трудоемкость,Статус,Дата выполнения");
 			mtb.setData("tasks");
 			tasks_tb = new JTable(mtb);
 			tasks_tb.setSize(new Dimension(TASKS_WIDTH, TASKS_HEIGTH));
@@ -157,9 +100,9 @@
 			tasks_tb.getModel().addTableModelListener(new TableModelListener() {
 
       	public void tableChanged(TableModelEvent e) {
-
+										int row = e.getFirstRow();
 					if (e.getType()!=TableModelEvent.INSERT && e.getType()!=TableModelEvent.DELETE) {
-					int row = e.getFirstRow();
+
 					int column = e.getColumn();
 					TableModel model = (TableModel)e.getSource();
 					String columnName = model.getColumnName(column);
@@ -173,23 +116,35 @@
 						if(column == 2)
 							st.executeUpdate("update tasks set "+ columnName +"= " + data
 							+ "where title = '" + tasks_tb.getValueAt(row,0)+"' ;");
-							else
+							else{
+								if(column==3){
+									if(data.equals("Выполнено")){
+										//тут окно с вводом даты и в конструктор строка с содержимым title
+										//tasks_tb.getValueAt(row,0)
+									}else{
+										if(data.equals("Запланировано")){
+											st.executeUpdate("update tasks set "+ columnName +"= '" + data
+											+ "' where title = '" + tasks_tb.getValueAt(row,0)+"' ;");
+										}
+										else{
+											//тут окно с ошибкой типа не вып не зап
+										}
+									}
+
+								}
 							st.executeUpdate("update tasks set "+ columnName +"= '" + data
 							+ "' where title = '" + tasks_tb.getValueAt(row,0)+"' ;");
-
+						}
 					}catch(SQLException updExc){
 						System.out.println("updExc !!!!!!!!!!!!!");
 						updExc.printStackTrace();
 					}
 				}else{
-					int row = e.getFirstRow();
+
 						System.out.println("rowww= "+row);
-
 				}
-
-				}
+			}
     	});
-			//tasks_tb.addRow(new Vector<Object>);
 			JScrollPane tasks_scrtb = new JScrollPane(tasks_tb);
 			tasks_tb.setFillsViewportHeight(true);
 			tasks_scrtb.setSize(new Dimension(TASKS_WIDTH, TASKS_HEIGTH));
@@ -210,7 +165,6 @@
 			workdays_tb.setPreferredSize(new Dimension(WORKDAYS_WIDTH, WORKDAYS_HEIGTH));
 			JScrollPane workdays_scrtb = new JScrollPane(workdays_tb);
 			workdays_tb.setFillsViewportHeight(true);
-			//tasks_tb.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 			workdays_scrtb.setSize(new Dimension(WORKDAYS_WIDTH, WORKDAYS_HEIGTH));
 			workdays_scrtb.setPreferredSize(new Dimension(WORKDAYS_WIDTH, WORKDAYS_HEIGTH));
 			JLabel workday_lbl = new JLabel("Рабочие дни");
@@ -242,6 +196,57 @@
 			panel.add(tasksPan,BorderLayout.CENTER);
 			panel.add(workdaysPan,BorderLayout.EAST);
 			panel.add(showDiagPan,BorderLayout.SOUTH);
+			ok_bt.addActionListener(new ActionListener() {
+
+				public void actionPerformed(ActionEvent e) {
+
+					if (isDateStr(begin_tf.getText()) && isDateStr(end_tf.getText())){
+
+						try{
+						java.util.Date d1 =  new SimpleDateFormat("yyyy-MM-dd").parse(begin_tf.getText());
+						java.util.Date d2 =  new SimpleDateFormat("yyyy-MM-dd").parse(end_tf.getText());
+						if(d2.after(d1) && d1.before(d2)){
+							int datefind = 0;
+							try {
+								ResultSet rsx = st.executeQuery("select id from sprintdates;");
+								while(rsx.next()){
+										datefind = rsx.getInt("id");
+									}
+							} catch (SQLException cc) {
+								cc.printStackTrace();
+								System.out.println("NOT QUIET WHAT WAS EXPECTED");
+							}
+							if(datefind==1){
+								try{
+									st.executeUpdate("UPDATE sprintdates SET begindate ='"+ begin_tf.getText() +"', enddate ='"+ end_tf.getText() +"';");
+									JOptionPane.showMessageDialog(null, "Добавлены", "Уведомленька", JOptionPane.ERROR_MESSAGE);
+								}catch (SQLException aa) {
+									aa.printStackTrace();
+									System.out.println("не обновилось");
+								}
+							}
+							if(datefind==0){
+								try{
+										st.executeUpdate("INSERT INTO sprintdates (begindate, enddate) VALUES ('"+ begin_tf.getText()+"','"+ end_tf.getText() +"');");
+										JOptionPane.showMessageDialog(null, "Добавлены потом ", "Уведомленька", JOptionPane.ERROR_MESSAGE);
+									}catch (SQLException bb) {
+										bb.printStackTrace();
+										System.out.println("не добавилось");
+									}
+							}
+
+					}else{
+						JOptionPane.showMessageDialog(null, "Дата начала должна быть меньше даты окончания", "Ошибочка((", JOptionPane.ERROR_MESSAGE);
+					}
+				}catch(Exception parseExc){
+					parseExc.printStackTrace();
+				}
+				}else{
+					JOptionPane.showMessageDialog(null, "Неверный формат даты", "Ошибочка((", JOptionPane.ERROR_MESSAGE);
+				}
+
+			}
+			});
 
 			addnew_task.addActionListener(new ActionListener() {
 
@@ -269,7 +274,7 @@
 				delete_task.addActionListener(new ActionListener() {
 
 								public void actionPerformed(ActionEvent e) {
-									//tasks_tb.getModel().delRow(tasks_tb.getSelectionModel().getLeadSelectionIndex());
+									delRowInMain((MyTableModel)tasks_tb.getModel());
 
 								}
 
@@ -289,7 +294,6 @@
 														}
 
 						});
-
 
 			add(panel);
 
@@ -311,18 +315,14 @@
 
 		}
 
-		private class RowListener implements ListSelectionListener {
-			public void valueChanged(ListSelectionEvent event) {
-				if (event.getValueIsAdjusting()) {
-			return;
-			}
-
-			int rowSelected = tasks_tb.getSelectionModel().getLeadSelectionIndex();
-			if(rowSelected!=-1) {
-			System.out.println("Row selected: "+tasks_tb.getSelectionModel().getLeadSelectionIndex());
-			}
-
-			}
+		public void deleteQuery(String title){
+			try{
+				System.out.println("title= "+title);
+			st.executeUpdate("delete from tasks where title='"+ title +"';");
+		}catch(SQLException e){
+			System.out.println("Deleting failed");
+			e.printStackTrace();
+		}
 		}
 
 		public static void setPeriodFields(String nametable){
@@ -340,26 +340,19 @@
 		}
 
 		public static boolean isDateStr(String testString){
-	         Pattern p = Pattern.compile("[0-9]{4}-(0[1-9]|1[012])-(0[1-9]|1[0-9]|2[0-9]|3[01])");
-	         Matcher m = p.matcher(testString);
-	         return m.matches();
+					 Pattern p = Pattern.compile("[0-9]{4}-(0[1-9]|1[012])-(0[1-9]|1[0-9]|2[0-9]|3[01])");
+					 Matcher m = p.matcher(testString);
+					 return m.matches();
 	 }
 
 	 private void addRowInMain(Object[] obj, MyTableModel customModel) {
-		 new Thread(new Runnable() {
-		 private int value = 0;
-		 @Override
-		 public void run() {
 					 customModel.safeAddRow(obj);
-
-					 try {
-							Thread.sleep(200);
-					 } catch (InterruptedException e) {}
-		 }
-		}).start();
-
-
 	 }
+
+	 private void delRowInMain(MyTableModel customModel) {
+					 customModel.safeDelRow(tasks_tb.getSelectionModel().getLeadSelectionIndex());
+	 }
+
 
 
 		class AddValues extends JDialog {
@@ -476,12 +469,6 @@
     private Vector<String> columnNames = new Vector<String>();
 		private Vector<Vector<Object>> data = new Vector<Vector<Object>>();
 
-		// public void setColumnNames(String s) {
-		// 	String[] tmp = s.split(",");
-		// 	for(int i = 0; i<tmp.length;i++)
-		// 		columnNames.add(tmp[i]);
-		// }
-
 		public void setData(String nametable){
 			try{
 				ResultSet rs = st.executeQuery("select * from " + nametable);
@@ -512,21 +499,22 @@
 		}
 
 		public void safeAddRow(Object[] o) {
-						Vector<Object> vo = new Vector<Object>();
-						for(int i=0; i<o.length;i++)
+				Vector<Object> vo = new Vector<Object>();
+					for(int i=0; i<o.length;i++)
 							vo.add(o[i]);
-						data.add(vo);
-						System.out.println("data.size()= " + data.size());
-						System.out.println("vo[0] "+vo.get(0)+"vo[1] "+vo.get(1)+"vo[2] "+vo.get(2));
-			if (SwingUtilities.isEventDispatchThread()) {
-				addRow(vo);
-    	} else {
-       SwingUtilities.invokeLater(new Runnable() {
-          public void run() {
+					data.add(vo);
+					System.out.println("data.size()= " + data.size());
+					System.out.println("vo[0] "+vo.get(0)+"vo[1] "+vo.get(1)+"vo[2] "+vo.get(2));
+					if (SwingUtilities.isEventDispatchThread()) {
 						addRow(vo);
-					}
-       });
-    }
+    			}
+					else {
+       			SwingUtilities.invokeLater(new Runnable() {
+          		public void run() {
+								addRow(vo);
+							}
+       			});
+    			}
 		}
 
 		public void addRow(Vector<Object> vo) {
@@ -534,10 +522,22 @@
 			this.fireTableRowsInserted(data.size()-1, data.size()-1);
 		}
 
+		public void safeDelRow(int row) {
+			if (SwingUtilities.isEventDispatchThread()) {
+				delRow(row);
+			} else {
+			 SwingUtilities.invokeLater(new Runnable() {
+					public void run() {
+						delRow(row);
+					}
+			 });
+			}
+		}
 
 		public void delRow(int row) {
-		data.remove(row);
-		this.fireTableDataChanged();
+			deleteQuery((String)tasks_tb.getValueAt(row,0));
+			data.remove(row);
+			this.fireTableRowsDeleted(row,row);
 		}
 
     public int getColumnCount() {
@@ -556,18 +556,6 @@
       return data.get(row).get(col);
     }
 
-    /**
-     * JTable uses this method to determine the default renderer/ editor for
-     * each cell. If we didn't implement this method, then the last column
-     * would contain text ("true"/"false"), rather than a check box.
-     */
-    // public Class getColumnClass(int c) {
-    //   return getValueAt(0, c).getClass();
-    // }
-
-    /**
-     * Don't need to implement this method unless your table's editable.
-     */
     public boolean isCellEditable(int row, int col) {
       //Note that the data/cell address is constant,
       //no matter where the cell appears onscreen.
@@ -644,5 +632,20 @@
 
 			}
 		}
+
+		private class RowListener implements ListSelectionListener {
+			public void valueChanged(ListSelectionEvent event) {
+				if (event.getValueIsAdjusting()) {
+			return;
+			}
+
+			int rowSelected = tasks_tb.getSelectionModel().getLeadSelectionIndex();
+			if(rowSelected!=-1) {
+			System.out.println("Row selected: "+tasks_tb.getSelectionModel().getLeadSelectionIndex());
+			}
+
+			}
+		}
+
 
 	}
